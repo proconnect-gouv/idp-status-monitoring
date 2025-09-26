@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {},
+  "extensions": {
+    "recommendations": ["oven.bun-vscode", "yoavbls.pretty-ts-errors"],
+  },
+}

@@ -1,0 +1,6 @@
+.git
+.github
+*.md
+**/*.spec.ts
+**/*.test.ts
+node_modules

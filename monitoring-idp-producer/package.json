@@ -1,0 +1,6 @@
+{
+  "name": "monitoring-idp-producer",
+  "module": "index.ts",
+  "type": "module",
+  "private": true
+}
