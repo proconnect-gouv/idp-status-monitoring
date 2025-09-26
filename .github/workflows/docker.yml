@@ -58,6 +58,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   test:
+    name: 🚥 Examples tests
     runs-on: ubuntu-latest
     needs: build
 
@@ -87,13 +88,4 @@ jobs:
           cache-from: type=gha
 
       - name: 🧪 Test consumer
-        run: |
-          docker run --rm monitoring-consumer:test > output.txt
-          cat output.txt
-          grep -q "Hello via Bun!" output.txt
-
-      - name: 🧪 Test producer
-        run: |
-          docker run --rm monitoring-producer:test > output.txt
-          cat output.txt
-          grep -q "Hello via Bun!" output.txt
+        run: bun test examples

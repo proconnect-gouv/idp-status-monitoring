@@ -11,12 +11,12 @@ RUN bun install --frozen-lockfile
 FROM deps AS build-consumer
 COPY monitoring-idp-consumer/src/ ./monitoring-idp-consumer/src/
 RUN bun build --compile --minify --sourcemap \
-  monitoring-idp-consumer/src/index.ts --outfile=consumer
+  monitoring-idp-consumer/src/bin/index.ts --outfile=consumer
 
 FROM deps AS build-producer
 COPY monitoring-idp-producer/src/ ./monitoring-idp-producer/src/
 RUN bun build --compile --minify --sourcemap \
-  monitoring-idp-producer/src/index.ts --outfile=producer
+  monitoring-idp-producer/src/bin/index.ts --outfile=producer
 
 FROM alpine:latest AS base-runtime
 RUN apk add --no-cache ca-certificates libstdc++ libgcc
