@@ -6,7 +6,7 @@ COPY package.json bun.lock bunfig.toml tsconfig.json ./
 COPY monitoring-idp-consumer/package.json ./monitoring-idp-consumer/
 COPY monitoring-idp-producer/package.json ./monitoring-idp-producer/
 
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --production
 
 FROM deps AS build-consumer
 COPY monitoring-idp-consumer/src/ ./monitoring-idp-consumer/src/

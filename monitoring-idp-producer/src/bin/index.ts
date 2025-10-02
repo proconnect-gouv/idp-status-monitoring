@@ -1,14 +1,16 @@
 //
 
 import { ConfigSchema } from "#src/config";
-import { channelWrapper } from "#src/rpc";
+import { createAmqpConnection, setupRpcProducer } from "#src/rpc";
 import { router } from "#src/server";
 import { Hono } from "hono";
 import type { ServerContext } from "../server/context";
 
 //
 
-await ConfigSchema.parseAsync(process.env);
+const config = await ConfigSchema.parseAsync(process.env);
+const connection = await createAmqpConnection(config.AMQP_URL);
+const channelWrapper = setupRpcProducer(connection, config);
 
 //
 

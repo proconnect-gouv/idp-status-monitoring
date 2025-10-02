@@ -1,0 +1,56 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mock-idp:
+    image: nginx:alpine
+    volumes:
+      - ./mock-idp.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+
+  producer:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: producer
+    ports:
+      - "3000:3000"
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - IDP_URLS=["http://mock-idp/idp/test-idp","http://mock-idp/idp/another-idp"]
+      - QUEUE_PRODUCER_NAME=monitoring-producer
+      - QUEUE_CONSUMER_NAME=monitoring-consumer
+      - PORT=3000
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mock-idp:
+        condition: service_healthy
+
+  consumer:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: consumer
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - QUEUE_PRODUCER_NAME=monitoring-producer
+      - QUEUE_CONSUMER_NAME=monitoring-consumer
+      - MAP_FI_NAMES_TO_URL={"test-idp":"http://mock-idp/idp/test-idp","another-idp":"http://mock-idp/idp/another-idp"}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mock-idp:
+        condition: service_healthy

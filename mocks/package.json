@@ -1,0 +1,7 @@
+{
+  "name": "@/mocks",
+  "private": true,
+  "exports": {
+    "./amqp/in-memory": "./amqp/in-memory.ts"
+  }
+}

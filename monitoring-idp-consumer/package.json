@@ -1,7 +1,7 @@
 {
   "name": "monitoring-idp-consumer",
-  "type": "module",
   "private": true,
+  "type": "module",
   "imports": {
     "#src/*": "./src/*/index.ts"
   },
@@ -12,6 +12,7 @@
     "zod": "4.1.11"
   },
   "devDependencies": {
+    "@/mocks": "file:../mocks",
     "@types/amqplib": "0.10.7"
   }
 }

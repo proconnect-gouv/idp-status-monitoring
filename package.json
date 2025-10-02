@@ -17,7 +17,9 @@
     ]
   },
   "devDependencies": {
-    "@types/bun": "1.2.22",
+    "@cucumber/cucumber": "^12.2.0",
+    "@tsconfig/bun": "1.0.8",
+    "@types/bun": "1.2.23",
     "prettier": "3.6.2",
     "prettier-plugin-organize-imports": "4.3.0",
     "typescript": "5.9.2"
