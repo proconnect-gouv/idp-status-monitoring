@@ -33,7 +33,7 @@ export class InMemoryChannel extends EventEmitter {
   }
 
   // Override emit to handle message delivery for testing
-  emit(event: string | symbol, ...args: any[]): boolean {
+  override emit(event: string | symbol, ...args: any[]): boolean {
     if (event === "deliver-message") {
       const [queueName, content, properties] = args;
       const consumer = this.consumers.get(queueName);

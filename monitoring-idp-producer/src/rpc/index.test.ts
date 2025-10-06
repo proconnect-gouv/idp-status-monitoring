@@ -12,6 +12,7 @@ const mockConfig: Config = {
   QUEUE_PRODUCER_NAME: "test-producer-queue",
   IDP_URLS: [],
   HTTP_TIMEOUT: 5000,
+  PORT: 3000,
 };
 const connection = new InMemoryConnection();
 

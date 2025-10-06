@@ -1,26 +1,18 @@
-import { loadConfiguration, runCucumber } from "@cucumber/cucumber/api";
+//
+
+import { $ } from "bun";
 import { test } from "bun:test";
-import { join } from "node:path";
+
+//
 
 test(
   "Producer-Consumer Integration",
-  async () => {
-    const testDir = join(import.meta.dir);
-
-    const { runConfiguration } = await loadConfiguration({
-      provided: {
-        parallel: 1,
-        paths: [join(testDir, "integration.feature")],
-        require: [join(process.cwd(), "tests/step_definitions/docker_compose.ts")],
-        worldParameters: { testDir },
-      },
-    });
-
-    const { success } = await runCucumber(runConfiguration);
-
-    if (!success) {
-      throw new Error("❌");
-    }
+  async () =>
+    $.cwd(import.meta.dir).env({
+      ...process.env,
+      FORCE_COLOR: "1",
+    })`bun x --bun cucumber-js --import ../../tests/step_definitions/* *.feature`,
+  {
+    timeout: 120_000,
   },
-  { timeout: 120_000 },
 );

@@ -74,8 +74,7 @@ jobs:
         with:
           context: .
           target: consumer
-          load: true
-          tags: monitoring-consumer:test
+          load: true          tags: monitoring-consumer:test
           cache-from: type=gha
 
       - name: 🏗️ Build producer for testing
@@ -84,8 +83,12 @@ jobs:
           context: .
           target: producer
           load: true
-          tags: monitoring-producer:test
           cache-from: type=gha
+
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: 🧪 Test consumer
         run: bun test examples

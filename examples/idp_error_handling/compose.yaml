@@ -1,9 +1,6 @@
 services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 5s
@@ -15,7 +12,11 @@ services:
     volumes:
       - ./mock-idp.conf:/etc/nginx/conf.d/default.conf:ro
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
       interval: 5s
       timeout: 3s
       retries: 3
@@ -25,8 +26,6 @@ services:
       context: ../..
       dockerfile: Dockerfile
       target: producer
-    ports:
-      - "3000:3000"
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://mock-idp/idp/healthy","http://mock-idp/idp/error","http://mock-idp/idp/not-found"]

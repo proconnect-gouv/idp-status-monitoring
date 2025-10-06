@@ -12,4 +12,3 @@ Feature: Producer-Consumer Integration
     And I run compose "ps --format json producer" and the service should be "running"
     And I run compose "ps --format json consumer" and the service should be "running"
     And I run compose "logs consumer" and it should contain "Consumer started successfully!"
-    And I run compose "down --volumes"

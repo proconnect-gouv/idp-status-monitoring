@@ -54,23 +54,16 @@ async function runCompose(
 
 export interface DockerComposeWorld extends World {
   currentDir: string;
-  lastOutput: string;
   projectName: string;
 }
 
 // Background steps
 Given("I am in this directory", function (this: DockerComposeWorld) {
   // Get directory from world parameters passed by test file
-  const testDir = this.parameters?.testDir;
+  const testDir = this.parameters?.testDir || process.cwd();
 
-  if (testDir) {
-    this.currentDir = testDir;
-    this.projectName = basename(this.currentDir);
-  } else {
-    throw new Error(
-      "testDir not provided. Pass it via worldParameters in loadConfiguration",
-    );
-  }
+  this.currentDir = testDir;
+  this.projectName = basename(this.currentDir);
 });
 
 // Legacy support for explicit directory
@@ -90,10 +83,6 @@ When(
     await runCompose(this.projectName, args, this.currentDir);
   },
 );
-
-When("I wait {int} seconds", async function (ms: number) {
-  await new Promise((resolve) => setTimeout(resolve, ms * 1000));
-});
 
 // Assertion steps
 Then(
@@ -149,7 +138,5 @@ Then(
 
 // Cleanup
 After({ timeout: 30000 }, async function (this: DockerComposeWorld) {
-  if (this.currentDir) {
-    await runCompose(this.projectName, "down --volumes", this.currentDir);
-  }
+  await runCompose(this.projectName, "down --volumes", this.currentDir);
 });
