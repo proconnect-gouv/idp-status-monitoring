@@ -53,3 +53,12 @@ services:
         condition: service_healthy
       mock-idp:
         condition: service_healthy
+
+  test-runner:
+    image: curlimages/curl:latest
+    depends_on:
+      - rabbitmq
+      - mock-idp
+      - producer
+      - consumer
+    entrypoint: ["sleep", "infinity"]

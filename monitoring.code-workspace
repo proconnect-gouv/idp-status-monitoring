@@ -6,8 +6,6 @@
   ],
   "settings": {
     "editor.formatOnSave": true,
-    "cucumber.features": ["examples/**/*.feature"],
-    "cucumber.glue": ["tests/step_definitions/**/*.ts"],
   },
   "extensions": {
     "recommendations": ["oven.bun-vscode", "yoavbls.pretty-ts-errors"],
