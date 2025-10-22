@@ -21,21 +21,27 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     expect(result.output).toBe("ok");
   });
 
-  test.serial("🌐 Producer: GET /idp/test-idp returns 200", async () => {
-    const result = await env.execInService(
-      "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
-    );
-    expect(result.output).toBe("'200'");
-  });
+  test.serial(
+    "🔨 Producer: GET /idp/olympia - Iron Warriors Olympia IdP returns 200",
+    async () => {
+      const result = await env.execInService(
+        "test_runner",
+        "curl -s -w '%{http_code}' http://producer:3000/idp/olympia",
+      );
+      expect(result.output).toBe("'200'");
+    },
+  );
 
-  test.serial("🌐 Producer: GET /idp/another-idp returns 200", async () => {
-    const result = await env.execInService(
-      "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/another-idp",
-    );
-    expect(result.output).toBe("'200'");
-  });
+  test.serial(
+    "⚔️ Producer: GET /idp/medrengard - Iron Warriors Medrengard IdP returns 200",
+    async () => {
+      const result = await env.execInService(
+        "test_runner",
+        "curl -s -w '%{http_code}' http://producer:3000/idp/medrengard",
+      );
+      expect(result.output).toBe("'200'");
+    },
+  );
 
   test.serial("🌐 Producer: GET /idp/unknown returns 404", async () => {
     const result = await env.execInService(
@@ -53,47 +59,77 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
         "curl -s http://producer:3000/idp/internet",
       );
       const data = JSON.parse(result.output);
-      expect(data.successfuls).toBeDefined();
-      expect(data.unsucessfuls).toBeDefined();
-      expect(data.successfuls.length).toBeGreaterThan(0);
+      expect(data).toMatchInlineSnapshot(`
+        {
+          "successfuls": [
+            {
+              "status": 200,
+              "url": "http://auth.olympia.ironwarriors",
+            },
+            {
+              "status": 200,
+              "url": "http://auth.medrengard.ironwarriors",
+            },
+          ],
+          "unsucessfuls": [],
+        }
+      `);
     },
   );
 
   test.serial(
-    "🌐 Producer: RPC call to consumer via rabbitmq works",
+    "🏰 Producer: RPC call to Imperial Fists IdP through fortress walls works",
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
+        "curl -s -w '%{http_code}' http://producer:3000/idp/olympia",
       );
       expect(result.output).toBe("'200'");
     },
   );
 
-  test.serial("🌐 Producer: Multiple concurrent requests succeed", async () => {
-    const result1 = await env.execInService(
-      "test_runner",
-      "curl -s http://producer:3000/",
-    );
-    const result2 = await env.execInService(
-      "test_runner",
-      "curl -s http://producer:3000/",
-    );
-    const result3 = await env.execInService(
-      "test_runner",
-      "curl -s http://producer:3000/",
-    );
-    expect(result1.output).toBe("ok");
-    expect(result2.output).toBe("ok");
-    expect(result3.output).toBe("ok");
-  });
+  test.serial(
+    "🛡️ Producer: Multiple siege attempts withstand assault",
+    async () => {
+      const results = await Promise.allSettled([
+        env.execInService("test_runner", "curl -s http://producer:3000/"),
+        env.execInService("test_runner", "curl -s http://producer:3000/"),
+        env.execInService("test_runner", "curl -s http://producer:3000/"),
+      ]);
+      expect(results).toMatchInlineSnapshot(`
+      [
+        {
+          "status": "fulfilled",
+          "value": {
+            "exitCode": 0,
+            "output": "ok",
+          },
+        },
+        {
+          "status": "fulfilled",
+          "value": {
+            "exitCode": 0,
+            "output": "ok",
+          },
+        },
+        {
+          "status": "fulfilled",
+          "value": {
+            "exitCode": 0,
+            "output": "ok",
+          },
+        },
+      ]
+    `);
+    },
+  );
 
   test.serial(
-    "🌐 Network: Split-network boundary verified - consumer queries intranet IDPs",
+    "🏰 Network: Fortress walls hold - consumer protects Imperial Fists IdPs from siege",
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
+        "curl -s -w '%{http_code}' http://producer:3000/idp/medrengard",
       );
       expect(result.output).toBe("'200'");
     },

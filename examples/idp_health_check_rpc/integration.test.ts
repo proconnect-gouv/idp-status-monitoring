@@ -19,8 +19,8 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
     await env.waitForLogMessage("consumer", "assertQueue monitoring-producer");
 
     const consumerLogs = await env.getServiceLogs("consumer");
-    expect(consumerLogs).toContain("test-idp");
-    expect(consumerLogs).toContain("another-idp");
+    expect(consumerLogs).toContain("rock");
+    expect(consumerLogs).toContain("caliban");
   });
 
   test.serial("📨 Producer: Connected to RabbitMQ", async () => {
@@ -43,20 +43,23 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
     expect(result.output).toBe("ok");
   });
 
-  test.serial("🔍 GET /idp/test-idp - RPC to healthy IDP", async () => {
-    const result = await env.execInService(
-      "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
-    );
-    expect(result.output).toBe("'200'");
-  });
-
   test.serial(
-    "🔍 GET /idp/another-idp - RPC to another healthy IDP",
+    "🕵️ GET /idp/inner-circle - RPC to Inner Circle secrets",
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/another-idp",
+        "curl -s -w '%{http_code}' http://producer:3000/idp/inner-circle",
+      );
+      expect(result.output).toBe("'200'");
+    },
+  );
+
+  test.serial(
+    "😈 GET /idp/fallen-angels - RPC to track The Fallen",
+    async () => {
+      const result = await env.execInService(
+        "test_runner",
+        "curl -s -w '%{http_code}' http://producer:3000/idp/fallen-angels",
       );
       expect(result.output).toBe("'200'");
     },

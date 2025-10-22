@@ -8,10 +8,40 @@ services:
       retries: 5
     stop_signal: SIGKILL
 
-  mock-idp:
+  auth.kraken.tyranids:
     image: nginx:alpine
     volumes:
-      - ./mock-idp.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./auth.kraken.tyranids.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    stop_signal: SIGKILL
+
+  auth.leviathan.tyranids:
+    image: nginx:alpine
+    volumes:
+      - ./auth.leviathan.tyranids.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    stop_signal: SIGKILL
+
+  auth.behemoth.tyranids:
+    image: nginx:alpine
+    volumes:
+      - ./auth.behemoth.tyranids.conf:/etc/nginx/conf.d/default.conf:ro
     healthcheck:
       test:
         [
@@ -30,7 +60,7 @@ services:
       target: producer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
-      - IDP_URLS=["http://mock-idp/idp/primary","http://mock-idp/idp/secondary","http://mock-idp/idp/tertiary"]
+      - IDP_URLS=["http://auth.kraken.tyranids","http://auth.leviathan.tyranids","http://auth.behemoth.tyranids"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
       - PORT=3000
@@ -38,7 +68,11 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mock-idp:
+      auth.kraken.tyranids:
+        condition: service_healthy
+      auth.leviathan.tyranids:
+        condition: service_healthy
+      auth.behemoth.tyranids:
         condition: service_healthy
     stop_signal: SIGKILL
 
@@ -51,12 +85,16 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - MAP_FI_NAMES_TO_URL={"primary":"http://mock-idp/idp/primary","secondary":"http://mock-idp/idp/secondary","tertiary":"http://mock-idp/idp/tertiary"}
+      - MAP_FI_NAMES_TO_URL={"kraken":"http://auth.kraken.tyranids","leviathan":"http://auth.leviathan.tyranids","behemoth":"http://auth.behemoth.tyranids"}
       - HTTP_TIMEOUT=5000
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mock-idp:
+      auth.kraken.tyranids:
+        condition: service_healthy
+      auth.leviathan.tyranids:
+        condition: service_healthy
+      auth.behemoth.tyranids:
         condition: service_healthy
     stop_signal: SIGKILL
 
@@ -64,7 +102,9 @@ services:
     image: curlimages/curl:latest
     depends_on:
       - rabbitmq
-      - mock-idp
+      - auth.kraken.tyranids
+      - auth.leviathan.tyranids
+      - auth.behemoth.tyranids
       - producer
       - consumer
     entrypoint: ["sleep", "infinity"]

@@ -18,9 +18,9 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     const consumerLogs = await env.getServiceLogs("consumer");
     expect(consumerLogs).toContain("Consumer started successfully!");
     expect(consumerLogs).toContain("Connected!");
-    expect(consumerLogs).toContain("healthy");
-    expect(consumerLogs).toContain("error");
-    expect(consumerLogs).toContain("not-found");
+    expect(consumerLogs).toContain("fenris");
+    expect(consumerLogs).toContain("prospero");
+    expect(consumerLogs).toContain("sorcerers");
   });
 
   test("📨 Producer: Connected to RabbitMQ", async () => {
@@ -35,26 +35,26 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     expect(result.output).toBe("ok");
   });
 
-  test("✅ GET /idp/healthy - RPC to healthy IDP returns 200", async () => {
+  test("🐺 GET /idp/fenris - RPC to Space Wolves IdP returns 200", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/healthy",
+      "curl -s -w '%{http_code}' http://producer:3000/idp/fenris",
     );
     expect(result.output).toBe("'200'");
   });
 
-  test("⚠️  GET /idp/error - RPC to error IDP returns 500", async () => {
+  test("💀 GET /idp/prospero - RPC to Thousand Sons IdP returns 500", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/error",
+      "curl -s -w '%{http_code}' http://producer:3000/idp/prospero",
     );
     expect(result.output).toBe("'500'");
   });
 
-  test("❌ GET /idp/not-found - RPC to not-found IDP returns 404", async () => {
+  test("🌀 GET /idp/sorcerers - RPC to Planet of Sorcerers IdP returns 404", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/not-found",
+      "curl -s -w '%{http_code}' http://producer:3000/idp/sorcerers",
     );
     expect(result.output).toBe("'404'");
   });
