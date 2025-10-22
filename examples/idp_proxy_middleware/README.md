@@ -6,19 +6,19 @@ Split-network architecture demonstrating internet↔intranet boundary with middl
 
 ```mermaid
 graph TB
-    subgraph internet["Internet Network (default)"]
+    subgraph internet["🌐 Internet Network (default)"]
         test["🧪 test_runner"]
         proxy["🔀 nginx proxy<br/>port 80"]
         producer["📤 producer<br/>port 3000"]
         mock_ext["🎭 mock_idp_external<br/>mock IDPs"]
     end
 
-    subgraph intranet["Intranet Network (isolated)"]
+    subgraph intranet["🔒 Intranet Network (isolated)"]
         consumer["📥 consumer"]
         mock_int["🎭 mock_idp_internal<br/>mock IDPs"]
     end
 
-    subgraph shared["Shared Resources"]
+    subgraph shared["🔗 Shared Resources"]
         rabbitmq["🐰 RabbitMQ<br/>both networks"]
     end
 
