@@ -12,7 +12,6 @@
     "zod": "4.1.11"
   },
   "devDependencies": {
-    "@/mocks": "file:../mocks",
     "@types/amqplib": "0.10.7"
   }
 }

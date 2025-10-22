@@ -30,11 +30,11 @@ services:
       target: producer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
-      - IDP_URLS=["http://mock-idp/idp/healthy","http://mock-idp/idp/error","http://mock-idp/idp/not-found"]
+      - IDP_URLS=["http://mock-idp/idp/primary","http://mock-idp/idp/secondary","http://mock-idp/idp/tertiary"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - HTTP_TIMEOUT=10000
       - PORT=3000
+      - HTTP_TIMEOUT=5000
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -51,8 +51,8 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - HTTP_TIMEOUT=10000
-      - MAP_FI_NAMES_TO_URL={"healthy":"http://mock-idp/idp/healthy","error":"http://mock-idp/idp/error","not-found":"http://mock-idp/idp/not-found"}
+      - MAP_FI_NAMES_TO_URL={"primary":"http://mock-idp/idp/primary","secondary":"http://mock-idp/idp/secondary","tertiary":"http://mock-idp/idp/tertiary"}
+      - HTTP_TIMEOUT=5000
     depends_on:
       rabbitmq:
         condition: service_healthy
