@@ -1,41 +1,85 @@
-import { expect, test } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { createDockerEnv } from "../../tests/docker";
 
-test(
-  "IDP Error Handling: Docker build and services start with error-handling configuration",
-  async () => {
-    await using env = createDockerEnv(import.meta.dir);
+describe("IDP Error Handling: Graceful handling of various error scenarios", () => {
+  let env: Awaited<ReturnType<typeof createDockerEnv>>;
 
-    // Start services - this verifies Docker build works
+  test("🚀 Setup: Start Docker services with error-handling config", async () => {
+    env = createDockerEnv(import.meta.dir);
     await env.start({ build: true, quiet: true });
+  }, 120_000);
 
-    // Verify all infrastructure services are healthy
+  test("🏗️  Infrastructure: RabbitMQ and Mock-IDP are healthy", async () => {
     expect(await env.getServiceHealth("rabbitmq")).toBe("healthy");
     expect(await env.getServiceHealth("mock-idp")).toBe("healthy");
+  });
 
-    // Verify application services are running
+  test("✅ Services: Producer and Consumer are running", async () => {
     expect(await env.getServiceState("producer")).toBe("running");
     expect(await env.getServiceState("consumer")).toBe("running");
+  });
 
-    // Verify consumer started with correct IDP configuration (healthy, error, not-found)
+  test("📨 Consumer: Started with error-handling configuration", async () => {
     const consumerLogs = await env.getServiceLogs("consumer");
     expect(consumerLogs).toContain("Consumer started successfully!");
     expect(consumerLogs).toContain("Connected!");
     expect(consumerLogs).toContain("healthy");
     expect(consumerLogs).toContain("error");
     expect(consumerLogs).toContain("not-found");
+  });
 
-    // Verify producer connected to RabbitMQ
+  test("📨 Producer: Connected to RabbitMQ", async () => {
     await env.waitForLogMessage("producer", "Connected!");
+  });
 
-    // Test the root health endpoint
-    const rootResult = await env.execInService(
+  test("🏥 GET / - Health check returns ok", async () => {
+    const result = await env.execInService(
       "test-runner",
       "curl -s http://producer:3000/",
     );
-    expect(rootResult.output).toBe("ok");
-  },
-  {
-    timeout: 120_000,
-  },
-);
+    expect(result.output).toBe("ok");
+  });
+
+  test("✅ GET /idp/healthy - RPC to healthy IDP returns 200", async () => {
+    const result = await env.execInService(
+      "test-runner",
+      "curl -s -w '%{http_code}' http://producer:3000/idp/healthy",
+    );
+    const statusCode = result.output.trim().replaceAll("'", "");
+    expect(statusCode).toBe("200");
+  });
+
+  test("⚠️  GET /idp/error - RPC to error IDP returns 500", async () => {
+    const result = await env.execInService(
+      "test-runner",
+      "curl -s -w '%{http_code}' http://producer:3000/idp/error",
+    );
+    const statusCode = result.output.trim().replaceAll("'", "");
+    expect(statusCode).toBe("500");
+  });
+
+  test("❌ GET /idp/not-found - RPC to not-found IDP returns 404", async () => {
+    const result = await env.execInService(
+      "test-runner",
+      "curl -s -w '%{http_code}' http://producer:3000/idp/not-found",
+    );
+    const statusCode = result.output.trim().replaceAll("'", "");
+    expect(statusCode).toBe("404");
+  });
+
+  test("📊 GET /idp/internet - Aggregated health includes errors", async () => {
+    const result = await env.execInService(
+      "test-runner",
+      "curl -s http://producer:3000/idp/internet",
+    );
+    const data = JSON.parse(result.output);
+    expect(data.successfuls).toBeDefined();
+    expect(data.unsucessfuls).toBeDefined();
+    expect(data.successfuls.length).toBeGreaterThan(0);
+    expect(data.unsucessfuls.length).toBeGreaterThan(0);
+  });
+
+  test("🧹 Cleanup: Stop all services", async () => {
+    await env[Symbol.asyncDispose]();
+  }, 30_000);
+});
