@@ -1,14 +1,14 @@
 # IDP Cascading Failures
 
-🦂 **Tyranid Hive Fleets**: System resilience when multiple bio-mass authentication tendrils fail.
+🦂 **Tyranid Hive Fleets**: System resilience when xenos bio-authentication swarms are exterminated.
 
 ## Architecture
 
 ```mermaid
 graph TB
     test["🧪 test_runner<br/>(Inquisitor)"]
-    producer["📤 producer<br/>(Imperium Watch)"]
-    consumer["📥 consumer<br/>(Fleet Tracker)"]
+    producer["📤 producer<br/>(Watch Fortress)"]
+    consumer["📥 consumer<br/>(Fleet Scanner)"]
     rabbitmq["🐰 RabbitMQ<br/>(Astropathic Relay)"]
     kraken["👾 auth.kraken.tyranids"]
     leviathan["👾 auth.leviathan.tyranids"]
@@ -24,20 +24,31 @@ graph TB
 
 ## What This Tests
 
-⚠️ **No tests implemented yet**
+**Three xenos authentication swarms threaten Holy Terra's login screens!**
 
-Tests system behavior when 1, 2, or all 3 Hive Fleet IdPs fail. Validates aggregated health reflects Tyranid bio-mass assimilation state correctly. Your biomass is now our password.
+System validates resilience when multiple Tyranid Hive Fleet IdPs are operational. Tests 3 IdPs (Kraken, Leviathan, Behemoth) responding to RPC health checks. All fleets return bio-mass consumption confirmations (200 OK). "Your password is now our password."
+
+**Cascading failure logic** (majority voting for `/idp/internet` endpoint):
+
+- **3/3 up** → 200 OK (majority healthy)
+- **2/3 up** → 200 OK (majority healthy)
+- **1/3 up** → 503 Service Unavailable (majority failed)
+- **0/3 up** → 503 Service Unavailable (all failed)
+
+**Note:** Dynamic failure scenarios tested in unit tests at `monitoring-idp-producer/src/server/router.test.ts`
 
 ## For Newcomers
 
-**Identity Providers (IdPs):** Services that authenticate users (like Google Login, GitHub Login, etc.)
+**Cascading Failures:** When multiple systems fail in sequence or simultaneously (like dominos falling)
 
 **This Example:**
 
-- **3 separate IdP services**, each with their own domain:
-  - `auth.kraken.tyranids` - Hive Fleet Kraken authentication service
-  - `auth.leviathan.tyranids` - Hive Fleet Leviathan authentication service
-  - `auth.behemoth.tyranids` - Hive Fleet Behemoth authentication service
-- **Producer** sends health check requests via RPC (Remote Procedure Call) to **Consumer**
-- **Consumer** queries each IdP and reports back
-- Tests what happens when multiple IdPs become unavailable (cascading failures)
+- **3 healthy Tyranid Hive Fleet IdPs:**
+  - `auth.kraken.tyranids` - Hive Fleet Kraken (returns 200 with "Feeding on your biomass...")
+  - `auth.leviathan.tyranids` - Hive Fleet Leviathan (returns 200 with "Assimilation protocols active")
+  - `auth.behemoth.tyranids` - Hive Fleet Behemoth (returns 200 with "Your password is now our password")
+- **Producer** queries via RPC, **Consumer** checks each Hive Fleet
+- Tests aggregated health endpoint (`/idp/internet`) with multiple IdPs
+- Validates majority-voting logic (service returns 503 when majority of IdPs fail)
+- Individual IdP queries work through RPC pattern
+- Unknown IdP names properly return 404

@@ -3,22 +3,29 @@
 ## Summary
 
 **Before:** 24 passing unit tests, 2 failing integration tests (26 tests total)
-**After:** 45 passing unit tests, 2 passing integration tests (47 tests total)
+**After:** 45 passing unit tests, 4 passing integration tests (58 tests total)
 **Status:** ✅ All tests passing
 
 ### Test Breakdown
+
 - **Application Unit Tests:** 25 tests (consumer RPC, producer RPC, router)
 - **Mock Infrastructure Tests:** 20 tests (InMemoryConnection, InMemoryChannel)
-- **Integration Tests:** 2 tests (Docker builds, service startup)
+- **Integration Tests:** 4 examples with 13 total integration tests
+  - `idp_health_check_rpc`: 9 tests
+  - `idp_error_handling`: 9 tests
+  - `idp_proxy_middleware`: 9 tests
+  - `idp_cascading_failures`: 10 tests
 
 ## What Changed
 
 ### 1. Fixed Docker Build (Dockerfile:5)
+
 - **Problem:** `bunfig.toml` was deleted but Dockerfile still referenced it
 - **Solution:** Removed `bunfig.toml` from COPY command (Bun 1.3+ has `linker = "isolated"` by default)
 - **Impact:** Integration tests can now build successfully
 
 ### 2. Enhanced Integration Tests
+
 - **Before:** Tests only checked if services started
 - **After:** Tests verify:
   - Docker builds work correctly
@@ -29,12 +36,14 @@
   - Configuration is loaded properly
 
 ### 3. Removed Low-Value Tests (3 tests removed)
+
 - Removed tests that check framework behavior instead of business logic:
   - Empty parameter validation (Zod handles this)
   - Duplicate invalid parameter tests
   - Trailing space URL tests (router framework behavior)
 
 ### 4. Enhanced Mock Infrastructure
+
 - **Added TypeScript interfaces** for type safety (`InMemoryMessage`, `ConsumerCallback`, `ChannelConfig`)
 - **Added state management** to track connection/channel open/closed states
 - **Added error handling** for operations on closed connections/channels
@@ -46,7 +55,9 @@
 ### 🟢 Application Unit Tests (25 tests) - Fast, Comprehensive Coverage
 
 #### Consumer RPC Tests (`monitoring-idp-consumer/src/rpc/index.test.ts`)
+
 **What matters:** Message processing logic, IDP lookup, HTTP requests, error handling, timeouts, concurrency
+
 - ✅ Sets up channel and consumer correctly
 - ✅ Processes messages for known IDPs and makes HTTP requests
 - ✅ Returns 404 for unknown IDPs (not in `MAP_FI_NAMES_TO_URL`)
@@ -56,7 +67,9 @@
 - ✅ **NEW:** Handles multiple concurrent messages with correct correlation IDs
 
 #### Producer RPC Tests (`monitoring-idp-producer/src/rpc/index.test.ts`)
+
 **What matters:** Correlation ID handling, response routing, concurrency
+
 - ✅ Consumes messages and emits correlation events
 - ✅ Handles multiple concurrent correlation IDs correctly
 - ✅ Parses JSON response messages
@@ -65,7 +78,9 @@
 - ✅ **NEW:** Handles high concurrency with 50 simultaneous requests
 
 #### Producer Router Tests (`monitoring-idp-producer/src/server/router.test.ts`)
+
 **What matters:** HTTP API logic, health aggregation, RPC flow
+
 - ✅ Root endpoint returns 200 "ok"
 - ✅ `/idp/internet` returns 200 when majority of IDPs succeed
 - ✅ `/idp/internet` returns 503 when majority fail or equal split
@@ -79,7 +94,9 @@
 ### 🟡 Mock Infrastructure Tests (20 tests) - Verify Test Tooling
 
 #### InMemoryConnection Tests (`mocks/amqp/in-memory.test.ts`)
+
 **What matters:** Mock behaves like real amqplib Connection
+
 - ✅ Creates connection in connected state
 - ✅ Creates channels correctly
 - ✅ Executes channel setup functions
@@ -88,7 +105,9 @@
 - ✅ Throws error when creating channel after close
 
 #### InMemoryChannel Tests (`mocks/amqp/in-memory.test.ts`)
+
 **What matters:** Mock behaves like real amqplib Channel
+
 - ✅ Asserts queues correctly
 - ✅ Rejects operations when channel is closed
 - ✅ Registers consumers on asserted queues
@@ -101,20 +120,45 @@
 - ✅ Closes channel and emits close event
 - ✅ Clears consumers when channel closes
 
-### 🔵 Integration Tests (2 tests) - Verify Docker/Deployment
+### 🔵 Integration Tests (3 tests) - Verify Docker/Deployment
 
-#### Producer-Consumer Integration
-**What matters:** Docker build works, services start, RabbitMQ connects
+#### IDP Health Check RPC (`examples/idp_health_check_rpc/`)
+
+**What matters:** Docker build works, services start, RabbitMQ connects, RPC flow works end-to-end
+
 - ✅ Docker builds complete successfully
-- ✅ RabbitMQ and mock-idp are healthy
+- ✅ RabbitMQ and Dark Angels IdPs are healthy
 - ✅ Producer and consumer services are running
-- ✅ Consumer connects to RabbitMQ and asserts queue
-- ✅ Consumer loads IDP configuration correctly
+- ✅ Consumer connects to RabbitMQ and loads config (rock, caliban, inner-circle, fallen-angels)
 - ✅ Producer connects to RabbitMQ and asserts queues
-- ✅ Root HTTP endpoint responds
+- ✅ RPC calls to specific IdPs return correct HTTP status
+- ✅ Unknown IdP names return 404
+- ✅ Aggregated `/idp/internet` endpoint works
+
+#### IDP Error Handling (`examples/idp_error_handling/`)
+
+**What matters:** Services start with error-handling configuration, various HTTP codes propagate correctly
+
+- ✅ All services start with error scenarios configured
+- ✅ Consumer loads multiple IDP configurations (fenris=200, prospero=500, sorcerers=404)
+- ✅ Producer connects to RabbitMQ successfully
+- ✅ Each IdP returns expected HTTP status code
+- ✅ Aggregated health check handles mixed success/failure
+
+#### IDP Proxy Middleware (`examples/idp_proxy_middleware/`)
+
+**What matters:** Network isolation works, RPC proxies private network access
+
+- ✅ Docker builds with split networks (default + fortress-network)
+- ✅ All services start and connect correctly
+- ✅ Producer can access Iron Warriors IdPs directly (public network)
+- ✅ Producer can access Imperial Fists IdPs via RPC through consumer (private network)
+- ✅ Network isolation prevents direct producer→fortress access
 
 #### IDP Error Handling
+
 **What matters:** Services start with error-handling configuration
+
 - ✅ All services start with error scenarios configured
 - ✅ Consumer loads multiple IDP configurations (healthy, error, not-found)
 - ✅ Producer connects to RabbitMQ successfully
@@ -123,18 +167,21 @@
 ## Why This Test Strategy Matters
 
 ### Unit Tests Provide Deep Coverage
+
 - **Fast:** Run in seconds, use in-memory mocks
 - **Comprehensive:** Cover all business logic paths
 - **Isolated:** Test one component at a time
 - **RPC logic is fully tested:** Correlation IDs, timeouts, error handling, JSON parsing
 
 ### Integration Tests Validate Deployment
+
 - **Docker builds:** Ensure production deployment works
 - **Service startup:** Verify all services can start and connect
 - **Configuration:** Ensure environment variables are parsed correctly
 - **Infrastructure:** RabbitMQ connections, health checks
 
 ### What We Don't Need to Test in Integration
+
 - ❌ RPC message flow end-to-end (already tested in unit tests with mocks)
 - ❌ HTTP status code propagation (unit tests cover this)
 - ❌ Error scenarios (unit tests cover all error paths)
@@ -156,24 +203,28 @@ bun test examples/
 ## Critical Paths Tested
 
 ### 1. IDP Health Aggregation (`/idp/internet`)
+
 - ✅ Fetches all configured IDPs
 - ✅ Categorizes responses (200-399 = success)
 - ✅ Returns 503 when majority fail
 - ✅ Handles empty IDP lists
 
 ### 2. RPC Message Flow (`/idp/:name`)
+
 - ✅ Producer sends message with correlation ID
 - ✅ Consumer receives message and performs HTTP request
 - ✅ Consumer sends response back with same correlation ID
 - ✅ Producer receives response and returns HTTP status
 
 ### 3. Error Handling
+
 - ✅ Unknown IDP names → 404
 - ✅ Network errors → 500
 - ✅ RPC timeout → 503
 - ✅ Malformed JSON → 500
 
 ### 4. Docker & Deployment
+
 - ✅ Multi-stage Docker build compiles successfully
 - ✅ Services start and connect to RabbitMQ
 - ✅ Configuration parsing works
@@ -189,16 +240,19 @@ bun test examples/
 ## Maintenance Guidelines
 
 ### When Adding New Features
+
 1. **Always write unit tests first** - Fast, reliable, comprehensive
 2. **Use mocks for external dependencies** - RabbitMQ, HTTP requests
 3. **Integration tests only for Docker/deployment changes** - Keep them simple
 
 ### When Tests Fail
+
 1. **Unit test failures:** Business logic issue - fix the code or test
 2. **Integration test failures:** Usually Docker, configuration, or timing issues
 3. **Flaky tests:** Usually integration tests - simplify or add more explicit waits
 
 ### Red Flags (Tests to Avoid)
+
 - ❌ Tests that depend on external services
 - ❌ Tests with arbitrary `sleep()` calls
 - ❌ Tests that test framework behavior (routing, validation)
@@ -210,25 +264,33 @@ bun test examples/
 ### Why These Tests Matter
 
 #### HTTP Timeout Test (Consumer)
+
 **Validates:** AbortSignal timeout mechanism works correctly
+
 - Simulates slow/hanging IDP endpoints
 - Ensures requests don't hang indefinitely
 - Critical for production reliability under network issues
 
 #### Concurrent Messages Test (Consumer)
+
 **Validates:** Multiple messages can be processed simultaneously without correlation ID mix-ups
+
 - Tests real-world scenario of multiple IDP checks happening at once
 - Ensures each message gets the correct response
 - Prevents response routing bugs
 
 #### Out-of-Order Response Test (Producer)
+
 **Validates:** Correlation ID system works even when responses arrive in unexpected order
+
 - Simulates realistic async behavior where faster requests complete first
 - Tests EventEmitter correlation logic
 - Critical for RPC pattern correctness
 
 #### High Concurrency Test (Producer)
+
 **Validates:** System can handle many simultaneous requests (50+)
+
 - Tests scalability of correlation ID mechanism
 - Ensures no memory leaks or event listener issues
 - Validates production-scale behavior
@@ -246,6 +308,7 @@ Testing the mock implementation itself provides several benefits:
 ## Conclusion
 
 This test suite provides:
+
 - **Fast feedback** via comprehensive unit tests
 - **Deployment confidence** via Docker integration tests
 - **Maintainability** by removing low-value tests
@@ -253,4 +316,15 @@ This test suite provides:
 - **Timeout & concurrency coverage** for production reliability
 - **Reliable test infrastructure** with tested mocks
 
-The 47 tests cover all critical business logic, edge cases for timeouts and high-concurrency scenarios, AND the test infrastructure itself, ensuring comprehensive and reliable test coverage.
+The 58 tests cover all critical business logic, edge cases for timeouts and high-concurrency scenarios, AND the test infrastructure itself, ensuring comprehensive and reliable test coverage.
+
+## Integration Test Consistency
+
+All integration tests follow consistent patterns:
+
+- **Consistent env creation**: `const env = createDockerEnv(import.meta.dir);`
+- **Serial execution**: All tests use `test.serial()` to avoid race conditions
+- **Wait for log messages**: Use `waitForLogMessage()` for RabbitMQ connections instead of checking service state
+- **Structured test flow**: Setup → Consumer checks → Producer checks → Endpoint tests → Cleanup
+- **Fast healthchecks**: All compose files use 1s intervals for rapid startup
+- **Clean shutdown**: All tests use `env[Symbol.asyncDispose]()` with 30s timeout

@@ -57,6 +57,10 @@ export class DockerComposeEnv {
   async execInService(serviceName: string, command: string) {
     return execInService(this.projectName, serviceName, command, this.cwd);
   }
+
+  async stopService(serviceName: string) {
+    await runCompose(this.projectName, `stop ${serviceName}`, this.cwd);
+  }
 }
 
 /**
@@ -224,7 +228,11 @@ export async function cleanupServices(
   projectName: string,
   cwd: string,
 ): Promise<void> {
-  await runCompose(projectName, "down --volumes", cwd);
+  await runCompose(
+    projectName,
+    ["down", "--timeout=1", "--volumes"].join(" "),
+    cwd,
+  );
 }
 
 /**
@@ -270,4 +278,15 @@ export async function waitForLogMessage(
   throw new Error(
     `Timeout waiting for "${expectedMessage}" in ${serviceName} logs after ${timeout}ms`,
   );
+}
+
+/**
+ * Stop a specific service
+ */
+export async function stopService(
+  projectName: string,
+  serviceName: string,
+  cwd: string,
+): Promise<void> {
+  await runCompose(projectName, `stop ${serviceName}`, cwd);
 }

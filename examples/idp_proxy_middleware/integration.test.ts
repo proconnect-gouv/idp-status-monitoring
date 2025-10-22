@@ -2,12 +2,11 @@ import { createDockerEnv } from "#testing/docker";
 import { describe, expect, test } from "bun:test";
 
 describe("IDP Monitoring via Proxy: Split-network architecture with internet and intranet", () => {
-  let env: Awaited<ReturnType<typeof createDockerEnv>>;
+  const env = createDockerEnv(import.meta.dir);
 
   test.serial(
     "🚀 Setup: Start Docker services with split networks",
     async () => {
-      env = createDockerEnv(import.meta.dir);
       await env.start({ build: true, quiet: true });
     },
     120_000,

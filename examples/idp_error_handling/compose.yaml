@@ -3,10 +3,9 @@ services:
     image: rabbitmq:3-management-alpine
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s
-      timeout: 3s
+      interval: 1s
+      timeout: 1s
       retries: 5
-    stop_signal: SIGKILL
 
   auth.fenris.spacewolves:
     image: nginx:alpine
@@ -18,10 +17,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   auth.prospero.thousandsons:
     image: nginx:alpine
@@ -33,10 +31,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   auth.sorcerers.thousandsons:
     image: nginx:alpine
@@ -48,10 +45,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   producer:
     build:
@@ -74,7 +70,6 @@ services:
         condition: service_healthy
       auth.sorcerers.thousandsons:
         condition: service_healthy
-    stop_signal: SIGKILL
 
   consumer:
     build:
@@ -96,7 +91,6 @@ services:
         condition: service_healthy
       auth.sorcerers.thousandsons:
         condition: service_healthy
-    stop_signal: SIGKILL
 
   test_runner:
     image: curlimages/curl:latest
@@ -108,4 +102,3 @@ services:
       - producer
       - consumer
     entrypoint: ["sleep", "infinity"]
-    stop_signal: SIGKILL

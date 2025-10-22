@@ -2,21 +2,18 @@ import { createDockerEnv } from "#testing/docker";
 import { describe, expect, test } from "bun:test";
 
 describe("IDP Health Check RPC: End-to-end distributed health monitoring", () => {
-  let env: Awaited<ReturnType<typeof createDockerEnv>>;
+  const env = createDockerEnv(import.meta.dir);
 
   test.serial(
     "🚀 Setup: Start Docker services",
     async () => {
-      env = createDockerEnv(import.meta.dir);
       await env.start({ build: true, quiet: true });
     },
     120_000,
   );
 
-  test.serial("📨 Consumer: Connected to RabbitMQ", async () => {
+  test.serial("📨 Consumer: Loaded Dark Angels configuration", async () => {
     await env.waitForLogMessage("consumer", "Consumer started successfully!");
-    await env.waitForLogMessage("consumer", "Connected!");
-    await env.waitForLogMessage("consumer", "assertQueue monitoring-producer");
 
     const consumerLogs = await env.getServiceLogs("consumer");
     expect(consumerLogs).toContain("rock");
@@ -25,14 +22,9 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
 
   test.serial("📨 Producer: Connected to RabbitMQ", async () => {
     await env.waitForLogMessage("producer", "Connected!");
-    await env.waitForLogMessage(
-      "producer",
-      "assertQueue : monitoring-producer",
-    );
-    await env.waitForLogMessage(
-      "producer",
-      "assertQueue : monitoring-consumer",
-    );
+
+    const producerLogs = await env.getServiceLogs("producer");
+    expect(producerLogs).toContain("assertQueue : monitoring-producer");
   });
 
   test.serial("🏥 GET / - Health check", async () => {

@@ -3,10 +3,9 @@ services:
     image: rabbitmq:3-management-alpine
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s
-      timeout: 3s
+      interval: 1s
+      timeout: 1s
       retries: 5
-    stop_signal: SIGKILL
     networks:
       - default
       - fortress-network
@@ -21,10 +20,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   auth.medrengard.ironwarriors:
     image: nginx:alpine
@@ -36,10 +34,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   auth.phalanx.imperialfists:
     image: nginx:alpine
@@ -51,10 +48,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
     networks:
       - fortress-network
 
@@ -68,10 +64,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
     networks:
       - fortress-network
 
@@ -103,10 +98,9 @@ services:
           "--spider",
           "http://127.0.0.1:3000/",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   consumer:
     build:
@@ -127,10 +121,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "sh", "-c", 'test -n "$$AMQP_URL"']
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
     networks:
       - fortress-network
 
@@ -149,10 +142,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/ || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   test_runner:
     image: curlimages/curl:latest
@@ -166,7 +158,6 @@ services:
       - consumer
       - proxy
     entrypoint: ["sleep", "infinity"]
-    stop_signal: SIGKILL
 
 networks:
   fortress-network:

@@ -3,10 +3,9 @@ services:
     image: rabbitmq:3-management-alpine
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 5s
-      timeout: 3s
+      interval: 1s
+      timeout: 1s
       retries: 5
-    stop_signal: SIGKILL
 
   auth.rock.darkangels:
     image: nginx:alpine
@@ -18,10 +17,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   auth.caliban.darkangels:
     image: nginx:alpine
@@ -33,10 +31,9 @@ services:
           "CMD-SHELL",
           "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
         ]
-      interval: 5s
-      timeout: 3s
-      retries: 3
-    stop_signal: SIGKILL
+      interval: 1s
+      timeout: 1s
+      retries: 5
 
   producer:
     build:
@@ -56,7 +53,6 @@ services:
         condition: service_healthy
       auth.caliban.darkangels:
         condition: service_healthy
-    stop_signal: SIGKILL
 
   consumer:
     build:
@@ -67,7 +63,7 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - MAP_FI_NAMES_TO_URL={"rock":"http://auth.rock.darkangels","caliban":"http://auth.caliban.darkangels"}
+      - MAP_FI_NAMES_TO_URL={"rock":"http://auth.rock.darkangels","caliban":"http://auth.caliban.darkangels","inner-circle":"http://auth.rock.darkangels","fallen-angels":"http://auth.caliban.darkangels"}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -75,7 +71,6 @@ services:
         condition: service_healthy
       auth.caliban.darkangels:
         condition: service_healthy
-    stop_signal: SIGKILL
 
   test_runner:
     image: curlimages/curl:latest
@@ -86,4 +81,3 @@ services:
       - producer
       - consumer
     entrypoint: ["sleep", "infinity"]
-    stop_signal: SIGKILL
