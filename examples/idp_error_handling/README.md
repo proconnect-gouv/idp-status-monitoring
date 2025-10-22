@@ -6,22 +6,15 @@ Graceful handling of various error scenarios in distributed IDP monitoring.
 
 ```mermaid
 graph TB
-    subgraph internet["🌐 Internet Network (default)"]
-        test["🧪 test_runner"]
-        producer["📤 producer"]
-    end
+    test["🧪 test_runner"]
+    producer["📤 producer"]
+    consumer["📥 consumer"]
+    rabbitmq["🐰 RabbitMQ"]
 
-    subgraph intranet["🔒 Intranet Network (isolated)"]
-        consumer["📥 consumer"]
-        subgraph idps["Mock IDPs"]
-            healthy["✅ /idp/healthy<br/>returns 200"]
-            error["⚠️ /idp/error<br/>returns 500"]
-            notfound["❌ /idp/not-found<br/>returns 404"]
-        end
-    end
-
-    subgraph shared["🔗 Shared Resources"]
-        rabbitmq["🐰 RabbitMQ<br/>both networks"]
+    subgraph idps["Mock IDPs"]
+        healthy["✅ /idp/healthy<br/>returns 200"]
+        error["⚠️ /idp/error<br/>returns 500"]
+        notfound["❌ /idp/not-found<br/>returns 404"]
     end
 
     test -->|curl /idp/X| producer

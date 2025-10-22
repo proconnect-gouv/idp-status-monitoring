@@ -6,21 +6,14 @@ End-to-end distributed health monitoring with RPC communication.
 
 ```mermaid
 graph TB
-    subgraph internet["🌐 Internet Network (default)"]
-        test["🧪 test_runner"]
-        producer["📤 producer<br/>port 3000"]
-    end
+    test["🧪 test_runner"]
+    producer["📤 producer<br/>port 3000"]
+    consumer["📥 consumer"]
+    rabbitmq["🐰 RabbitMQ<br/>RPC broker"]
 
-    subgraph intranet["🔒 Intranet Network (isolated)"]
-        consumer["📥 consumer"]
-        subgraph idps["Mock IDPs"]
-            idp1["✅ test-idp<br/>health endpoint"]
-            idp2["✅ another-idp<br/>health endpoint"]
-        end
-    end
-
-    subgraph shared["🔗 Shared Resources"]
-        rabbitmq["🐰 RabbitMQ<br/>RPC broker<br/>both networks"]
+    subgraph idps["Mock IDPs"]
+        idp1["✅ test-idp<br/>health endpoint"]
+        idp2["✅ another-idp<br/>health endpoint"]
     end
 
     test -->|GET /idp/X| producer

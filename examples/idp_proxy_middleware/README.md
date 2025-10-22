@@ -11,15 +11,12 @@ graph TB
         proxy["🔀 nginx proxy<br/>port 80"]
         producer["📤 producer<br/>port 3000"]
         mock_ext["🎭 mock_idp_external<br/>mock IDPs"]
+        rabbitmq["🐰 RabbitMQ<br/>default network"]
     end
 
     subgraph intranet["🔒 Intranet Network (isolated)"]
         consumer["📥 consumer"]
         mock_int["🎭 mock_idp_internal<br/>mock IDPs"]
-    end
-
-    subgraph shared["🔗 Shared Resources"]
-        rabbitmq["🐰 RabbitMQ<br/>both networks"]
     end
 
     test -->|curl| proxy
