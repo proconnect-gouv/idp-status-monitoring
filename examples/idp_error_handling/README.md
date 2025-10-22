@@ -10,19 +10,12 @@ graph TB
     producer["📤 producer"]
     consumer["📥 consumer"]
     rabbitmq["🐰 RabbitMQ"]
+    mock["🎭 mock-idp<br/>200/500/404"]
 
-    subgraph idps["Mock IDPs"]
-        healthy["✅ /idp/healthy<br/>returns 200"]
-        error["⚠️ /idp/error<br/>returns 500"]
-        notfound["❌ /idp/not-found<br/>returns 404"]
-    end
-
-    test -->|curl /idp/X| producer
-    producer -->|RPC query| rabbitmq
-    consumer -->|subscribe| rabbitmq
-    consumer -->|query| healthy
-    consumer -->|query| error
-    consumer -->|query| notfound
+    test -->|GET /idp/X| producer
+    producer -->|RPC| rabbitmq
+    rabbitmq -.->|RPC| consumer
+    consumer -->|query| mock
 ```
 
 ## Purpose

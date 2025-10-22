@@ -1,3 +1,8 @@
 {
-  "extends": "@tsconfig/bun/tsconfig.json"
+  "extends": "@tsconfig/bun/tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "#testing/*": ["./testing/*"]
+    }
+  }
 }

@@ -1,5 +1,5 @@
+import { createDockerEnv } from "#testing/docker";
 import { describe, expect, test } from "bun:test";
-import { createDockerEnv } from "../../tests/docker";
 
 describe("IDP Error Handling: Graceful handling of various error scenarios", () => {
   let env: Awaited<ReturnType<typeof createDockerEnv>>;
@@ -29,7 +29,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
 
   test("🏥 GET / - Health check returns ok", async () => {
     const result = await env.execInService(
-      "test-runner",
+      "test_runner",
       "curl -s http://producer:3000/",
     );
     expect(result.output).toBe("ok");
@@ -37,7 +37,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
 
   test("✅ GET /idp/healthy - RPC to healthy IDP returns 200", async () => {
     const result = await env.execInService(
-      "test-runner",
+      "test_runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/healthy",
     );
     expect(result.output).toBe("'200'");
@@ -45,7 +45,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
 
   test("⚠️  GET /idp/error - RPC to error IDP returns 500", async () => {
     const result = await env.execInService(
-      "test-runner",
+      "test_runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/error",
     );
     expect(result.output).toBe("'500'");
@@ -53,7 +53,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
 
   test("❌ GET /idp/not-found - RPC to not-found IDP returns 404", async () => {
     const result = await env.execInService(
-      "test-runner",
+      "test_runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/not-found",
     );
     expect(result.output).toBe("'404'");
@@ -61,7 +61,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
 
   test("📊 GET /idp/internet - Aggregated health includes errors", async () => {
     const result = await env.execInService(
-      "test-runner",
+      "test_runner",
       "curl -s http://producer:3000/idp/internet",
     );
     const data = JSON.parse(result.output);

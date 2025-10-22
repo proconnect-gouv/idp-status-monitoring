@@ -1,5 +1,5 @@
+import { createDockerEnv } from "#testing/docker";
 import { describe, expect, test } from "bun:test";
-import { createDockerEnv } from "../../tests/docker";
 
 describe("IDP Monitoring via Proxy: Split-network architecture with internet and intranet", () => {
   let env: Awaited<ReturnType<typeof createDockerEnv>>;

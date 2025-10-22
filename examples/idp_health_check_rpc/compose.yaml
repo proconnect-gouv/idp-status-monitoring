@@ -58,7 +58,7 @@ services:
         condition: service_healthy
     stop_signal: SIGKILL
 
-  test-runner:
+  test_runner:
     image: curlimages/curl:latest
     depends_on:
       - rabbitmq
