@@ -1,15 +1,22 @@
 # monitoring-idp-consumer
 
-To install dependencies:
+RPC worker executing IDP health checks.
+
+## Behavior
+
+Listens for RPC requests from producer, queries configured IDPs, returns health status.
+
+## Configuration
 
 ```bash
-bun install
+AMQP_URL=amqp://guest:guest@localhost:5672
+QUEUE_PRODUCER_NAME=monitoring-producer
+QUEUE_CONSUMER_NAME=monitoring-consumer
+MAP_FI_NAMES_TO_URL={"idp1":"http://internal/idp1","idp2":"http://internal/idp2"}
 ```
 
-To run:
+## Usage
 
 ```bash
 bun run src/bin/index.ts
 ```
-
-This project was created using `bun init` in bun v1.2.22. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
