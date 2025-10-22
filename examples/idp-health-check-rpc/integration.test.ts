@@ -48,8 +48,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
       "test-runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("200");
+    expect(result.output).toBe("'200'");
   });
 
   test.serial(
@@ -59,8 +58,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
         "test-runner",
         "curl -s -w '%{http_code}' http://producer:3000/idp/another-idp",
       );
-      const statusCode = result.output.trim().replaceAll("'", "");
-      expect(statusCode).toBe("200");
+      expect(result.output).toBe("'200'");
     },
   );
 
@@ -69,8 +67,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
       "test-runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/unknown",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("404");
+    expect(result.output).toBe("'404'");
   });
 
   test.serial("📊 GET /idp/internet - Aggregated health check", async () => {

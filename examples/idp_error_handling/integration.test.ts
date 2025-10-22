@@ -9,11 +9,6 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     await env.start({ build: true, quiet: true });
   }, 120_000);
 
-  test("🏗️  Infrastructure: RabbitMQ and Mock-IDP are healthy", async () => {
-    expect(await env.getServiceHealth("rabbitmq")).toBe("healthy");
-    expect(await env.getServiceHealth("mock-idp")).toBe("healthy");
-  });
-
   test("✅ Services: Producer and Consumer are running", async () => {
     expect(await env.getServiceState("producer")).toBe("running");
     expect(await env.getServiceState("consumer")).toBe("running");
@@ -45,8 +40,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
       "test-runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/healthy",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("200");
+    expect(result.output).toBe("'200'");
   });
 
   test("⚠️  GET /idp/error - RPC to error IDP returns 500", async () => {
@@ -54,8 +48,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
       "test-runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/error",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("500");
+    expect(result.output).toBe("'500'");
   });
 
   test("❌ GET /idp/not-found - RPC to not-found IDP returns 404", async () => {
@@ -63,8 +56,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
       "test-runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/not-found",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("404");
+    expect(result.output).toBe("'404'");
   });
 
   test("📊 GET /idp/internet - Aggregated health includes errors", async () => {

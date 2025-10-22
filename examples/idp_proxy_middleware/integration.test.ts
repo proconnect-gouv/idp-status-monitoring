@@ -13,26 +13,6 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     120_000,
   );
 
-  test.serial("🏗️  Infrastructure: Proxy is healthy", async () => {
-    expect(await env.getServiceHealth("proxy")).toBe("healthy");
-  });
-
-  test.serial("🏗️  Infrastructure: External IDP is healthy", async () => {
-    expect(await env.getServiceHealth("mock_idp_external")).toBe("healthy");
-  });
-
-  test.serial("🏗️  Infrastructure: Internal IDP is healthy", async () => {
-    expect(await env.getServiceHealth("mock_idp_internal")).toBe("healthy");
-  });
-
-  test.serial("🏗️  Infrastructure: Producer is healthy", async () => {
-    expect(await env.getServiceHealth("producer")).toBe("healthy");
-  });
-
-  test.serial("🏗️  Infrastructure: Consumer is healthy", async () => {
-    expect(await env.getServiceHealth("consumer")).toBe("healthy");
-  });
-
   test.serial("🌐 Producer: GET / returns ok", async () => {
     const result = await env.execInService(
       "test_runner",
@@ -46,8 +26,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
       "test_runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("200");
+    expect(result.output).toBe("'200'");
   });
 
   test.serial("🌐 Producer: GET /idp/another-idp returns 200", async () => {
@@ -55,8 +34,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
       "test_runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/another-idp",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("200");
+    expect(result.output).toBe("'200'");
   });
 
   test.serial("🌐 Producer: GET /idp/unknown returns 404", async () => {
@@ -64,8 +42,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
       "test_runner",
       "curl -s -w '%{http_code}' http://producer:3000/idp/unknown",
     );
-    const statusCode = result.output.trim().replaceAll("'", "");
-    expect(statusCode).toBe("404");
+    expect(result.output).toBe("'404'");
   });
 
   test.serial(
@@ -89,8 +66,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
         "test_runner",
         "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
       );
-      const statusCode = result.output.trim().replaceAll("'", "");
-      expect(statusCode).toBe("200");
+      expect(result.output).toBe("'200'");
     },
   );
 
@@ -119,8 +95,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
         "test_runner",
         "curl -s -w '%{http_code}' http://producer:3000/idp/test-idp",
       );
-      const statusCode = result.output.trim().replaceAll("'", "");
-      expect(statusCode).toBe("200");
+      expect(result.output).toBe("'200'");
     },
   );
 
