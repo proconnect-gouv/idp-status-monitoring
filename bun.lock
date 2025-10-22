@@ -22,7 +22,6 @@
         "zod": "4.1.11",
       },
       "devDependencies": {
-        "@/mocks": "file:../mocks",
         "@types/amqplib": "0.10.7",
       },
     },
@@ -37,7 +36,6 @@
         "zod": "4.1.11",
       },
       "devDependencies": {
-        "@/mocks": "file:../mocks",
         "@types/amqplib": "0.10.7",
       },
     },
@@ -360,10 +358,6 @@
     "chalk/supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 
     "hosted-git-info/lru-cache": ["lru-cache@10.4.3", "", {}, "sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ=="],
-
-    "monitoring-idp-consumer/@/mocks": ["@/mocks@file:mocks", {}],
-
-    "monitoring-idp-producer/@/mocks": ["@/mocks@file:mocks", {}],
 
     "prettier-plugin-gherkin/@cucumber/gherkin": ["@cucumber/gherkin@27.0.0", "", { "dependencies": { "@cucumber/messages": ">=19.1.4 <=22" } }, "sha512-j5rCsjqzRiC3iVTier3sa0kzyNbkcAmF7xr7jKnyO7qDeK3Z8Ye1P3KSVpeQRMY+KCDJ3WbTDdyxH0FwfA/fIw=="],
 

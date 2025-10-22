@@ -7,8 +7,11 @@ services:
       timeout: 3s
       retries: 5
     stop_signal: SIGKILL
+    networks:
+      - default
+      - intranet
 
-  mock-idp:
+  mock_idp_external:
     image: nginx:alpine
     volumes:
       - ./mock-idp.conf:/etc/nginx/conf.d/default.conf:ro
@@ -22,6 +25,25 @@ services:
       timeout: 3s
       retries: 3
     stop_signal: SIGKILL
+    networks:
+      - default
+
+  mock_idp_internal:
+    image: nginx:alpine
+    volumes:
+      - ./mock-idp.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    stop_signal: SIGKILL
+    networks:
+      - intranet
 
   producer:
     build:
@@ -30,16 +52,31 @@ services:
       target: producer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
-      - IDP_URLS=["http://mock-idp/idp/test-idp","http://mock-idp/idp/another-idp"]
+      - IDP_URLS=["http://mock_idp_external/idp/test-idp","http://mock_idp_external/idp/another-idp"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
       - PORT=3000
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mock-idp:
+      mock_idp_external:
         condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3000/",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     stop_signal: SIGKILL
+    networks:
+      - default
 
   consumer:
     build:
@@ -50,13 +87,20 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - MAP_FI_NAMES_TO_URL={"test-idp":"http://mock-idp/idp/test-idp","another-idp":"http://mock-idp/idp/another-idp"}
+      - MAP_FI_NAMES_TO_URL={"test-idp":"http://mock_idp_internal/idp/test-idp","another-idp":"http://mock_idp_internal/idp/another-idp"}
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mock-idp:
+      mock_idp_internal:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "sh", "-c", 'test -n "$$AMQP_URL"']
+      interval: 5s
+      timeout: 3s
+      retries: 3
     stop_signal: SIGKILL
+    networks:
+      - intranet
 
   proxy:
     image: nginx:alpine
@@ -65,7 +109,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - producer
+      producer:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -76,14 +121,25 @@ services:
       timeout: 3s
       retries: 3
     stop_signal: SIGKILL
+    networks:
+      - default
 
-  test-runner:
+  test_runner:
     image: curlimages/curl:latest
     depends_on:
       - rabbitmq
-      - mock-idp
+      - mock_idp_external
+      - mock_idp_internal
       - producer
       - consumer
       - proxy
     entrypoint: ["sleep", "infinity"]
     stop_signal: SIGKILL
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
+  intranet:
+    driver: bridge
