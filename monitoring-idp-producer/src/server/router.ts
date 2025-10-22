@@ -58,7 +58,6 @@ export const router = new Hono<ServerContext>()
       const { promise, resolve } = Promise.withResolvers<Response>();
 
       channelWrapper.once(correlationId, (reply) => {
-        console.log(`received response : ${reply}`);
         try {
           const response = JSON.parse(reply) as { status: StatusCode };
           resolve(new Response(null, { status: response.status || 500 }));
@@ -67,7 +66,7 @@ export const router = new Hono<ServerContext>()
         }
       });
 
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         resolve(new Response(null, { status: 503 }));
       }, HTTP_TIMEOUT);
 
@@ -78,6 +77,8 @@ export const router = new Hono<ServerContext>()
         persistent: false,
       });
 
-      return promise;
+      const response = await promise;
+      clearTimeout(timeoutId);
+      return response;
     },
   );

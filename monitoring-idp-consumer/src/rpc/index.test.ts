@@ -145,5 +145,226 @@ describe("RPC Message Consumer with EventEmitter", () => {
         );
       }
     });
+
+    it("should handle HTTP timeout with AbortSignal", async () => {
+      const shortTimeoutConfig: Config = {
+        ...testConfig,
+        HTTP_TIMEOUT: 50, // 50ms timeout
+      };
+
+      const channel = setupMessageConsumer(
+        connection as any,
+        shortTimeoutConfig,
+      ) as any;
+
+      // Mock fetch to reject with timeout error
+      globalFetchSpy.mockRejectedValue(
+        new Error("The operation was aborted"),
+      );
+
+      const responsePromise = new Promise<any>((resolve) => {
+        channel.once("message-sent", resolve);
+      });
+
+      channel.emit("deliver-message", "test-queue", "test-idp", {
+        correlationId: "timeout-test",
+        replyTo: "reply-queue",
+      });
+
+      const response = await responsePromise;
+
+      // Should return 500 because the request was aborted
+      expect(response.content).toBe(JSON.stringify({ status: 500 }));
+    });
+
+    it("should handle multiple concurrent messages correctly", async () => {
+      const channel = setupMessageConsumer(
+        connection as any,
+        testConfig,
+      ) as any;
+
+      // Track all sent messages
+      const sentMessages: any[] = [];
+      channel.on("message-sent", (msg: any) => {
+        sentMessages.push(msg);
+      });
+
+      // Mock different responses for different requests
+      globalFetchSpy
+        .mockResolvedValueOnce({ status: 200 })
+        .mockResolvedValueOnce({ status: 404 })
+        .mockResolvedValueOnce({ status: 500 });
+
+      // Send all three messages
+      channel.emit("deliver-message", "test-queue", "test-idp", {
+        correlationId: "concurrent-1",
+        replyTo: "reply-queue-1",
+      });
+      channel.emit("deliver-message", "test-queue", "test-idp", {
+        correlationId: "concurrent-2",
+        replyTo: "reply-queue-2",
+      });
+      channel.emit("deliver-message", "test-queue", "test-idp", {
+        correlationId: "concurrent-3",
+        replyTo: "reply-queue-3",
+      });
+
+      // Wait for all messages to be processed
+      await new Promise((resolve) => setTimeout(resolve, 50));
+
+      // Verify all 3 responses were sent
+      expect(sentMessages.length).toBe(3);
+
+      // Find each response by correlation ID and verify
+      const response1 = sentMessages.find(
+        (m) => m.options.correlationId === "concurrent-1",
+      );
+      const response2 = sentMessages.find(
+        (m) => m.options.correlationId === "concurrent-2",
+      );
+      const response3 = sentMessages.find(
+        (m) => m.options.correlationId === "concurrent-3",
+      );
+
+      expect(response1.content).toBe(JSON.stringify({ status: 200 }));
+      expect(response2.content).toBe(JSON.stringify({ status: 404 }));
+      expect(response3.content).toBe(JSON.stringify({ status: 500 }));
+    });
+  });
+
+  describe("setupMessageConsumer - edge cases", () => {
+    it("should nack malformed message with no content", async () => {
+      const channel = setupMessageConsumer(
+        connection as any,
+        testConfig,
+      ) as any;
+
+      let nackCalled = false;
+      const originalNack = channel.nack ? channel.nack.bind(channel) : () => {};
+      channel.nack = (...args: any[]) => {
+        nackCalled = true;
+        return originalNack(...args);
+      };
+
+      // Call consumer directly with malformed message (no content)
+      channel.consumers.get("test-queue")({
+        content: null, // Malformed: no content
+        properties: {
+          correlationId: "test-123",
+          replyTo: "reply-queue",
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Should have called nack
+      expect(nackCalled).toBe(true);
+    });
+
+    it("should nack message with missing correlationId", async () => {
+      const channel = setupMessageConsumer(
+        connection as any,
+        testConfig,
+      ) as any;
+
+      let nackCalled = false;
+      let sendToQueueCalled = false;
+      const originalNack = channel.nack ? channel.nack.bind(channel) : () => {};
+      const originalSendToQueue = channel.sendToQueue ? channel.sendToQueue.bind(channel) : () => {};
+      channel.nack = (...args: any[]) => {
+        nackCalled = true;
+        return originalNack(...args);
+      };
+      channel.sendToQueue = (...args: any[]) => {
+        sendToQueueCalled = true;
+        return originalSendToQueue(...args);
+      };
+
+      // Emit message without correlationId
+      channel.consumers.get("test-queue")({
+        content: Buffer.from("test-idp"),
+        properties: {
+          // correlationId missing!
+          replyTo: "reply-queue",
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Should nack and not send reply
+      expect(nackCalled).toBe(true);
+      expect(sendToQueueCalled).toBe(false);
+    });
+
+    it("should nack message with missing replyTo", async () => {
+      const channel = setupMessageConsumer(
+        connection as any,
+        testConfig,
+      ) as any;
+
+      let nackCalled = false;
+      let sendToQueueCalled = false;
+      const originalNack = channel.nack ? channel.nack.bind(channel) : () => {};
+      const originalSendToQueue = channel.sendToQueue ? channel.sendToQueue.bind(channel) : () => {};
+      channel.nack = (...args: any[]) => {
+        nackCalled = true;
+        return originalNack(...args);
+      };
+      channel.sendToQueue = (...args: any[]) => {
+        sendToQueueCalled = true;
+        return originalSendToQueue(...args);
+      };
+
+      // Emit message without replyTo
+      channel.consumers.get("test-queue")({
+        content: Buffer.from("test-idp"),
+        properties: {
+          correlationId: "test-123",
+          // replyTo missing!
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Should nack and not send reply
+      expect(nackCalled).toBe(true);
+      expect(sendToQueueCalled).toBe(false);
+    });
+
+    it("should nack message when processing throws error", async () => {
+      const channel = setupMessageConsumer(
+        connection as any,
+        testConfig,
+      ) as any;
+
+      let nackCalled = false;
+      let sendToQueueCalled = false;
+      const originalNack = channel.nack ? channel.nack.bind(channel) : () => {};
+      channel.nack = (...args: any[]) => {
+        nackCalled = true;
+        return originalNack(...args);
+      };
+      channel.sendToQueue = () => {
+        sendToQueueCalled = true;
+        throw new Error("sendToQueue failed");
+      };
+
+      // Mock fetch to throw an error
+      globalFetchSpy.mockRejectedValue(new Error("Unexpected error"));
+
+      channel.consumers.get("test-queue")({
+        content: Buffer.from("test-idp"),
+        properties: {
+          correlationId: "test-123",
+          replyTo: "reply-queue",
+        },
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 10));
+
+      // Should have called nack due to sendToQueue error
+      expect(nackCalled).toBe(true);
+      expect(sendToQueueCalled).toBe(true);
+    });
   });
 });

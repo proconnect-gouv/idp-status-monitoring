@@ -6,6 +6,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+    stop_signal: SIGKILL
 
   mock-idp:
     image: nginx:alpine
@@ -20,6 +21,7 @@ services:
       interval: 5s
       timeout: 3s
       retries: 3
+    stop_signal: SIGKILL
 
   producer:
     build:
@@ -37,6 +39,7 @@ services:
         condition: service_healthy
       mock-idp:
         condition: service_healthy
+    stop_signal: SIGKILL
 
   consumer:
     build:
@@ -53,6 +56,7 @@ services:
         condition: service_healthy
       mock-idp:
         condition: service_healthy
+    stop_signal: SIGKILL
 
   test-runner:
     image: curlimages/curl:latest
@@ -62,3 +66,4 @@ services:
       - producer
       - consumer
     entrypoint: ["sleep", "infinity"]
+    stop_signal: SIGKILL

@@ -47,15 +47,31 @@ export function setupRpcProducer(
 
   channel_wrapper.setMaxListeners(0);
   channel_wrapper.consume(QUEUE_CONSUMER_NAME, (message) => {
-    console.log(
-      `received message : ${message.properties.correlationId} - ${message.content.toString("utf8")}`,
-    );
+    try {
+      // Validate message structure
+      if (!message?.content || !message?.properties) {
+        console.error("Malformed message received: missing content or properties");
+        channel_wrapper.nack(message, false, false);
+        return;
+      }
 
-    channel_wrapper.emit(
-      message.properties.correlationId,
-      message.content.toString("utf8"),
-    );
-    channel_wrapper.ack(message);
+      const { correlationId } = message.properties;
+      if (!correlationId) {
+        console.error("Message missing required correlationId property");
+        channel_wrapper.nack(message, false, false);
+        return;
+      }
+
+      const content = message.content.toString("utf8");
+      console.log(`received message : ${correlationId} - ${content}`);
+
+      channel_wrapper.emit(correlationId, content);
+      channel_wrapper.ack(message);
+    } catch (err) {
+      console.error("Error processing message:", err);
+      // Don't requeue on processing errors
+      channel_wrapper.nack(message, false, false);
+    }
   });
 
   return channel_wrapper;

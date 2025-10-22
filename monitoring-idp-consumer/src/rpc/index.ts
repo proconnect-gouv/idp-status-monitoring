@@ -23,7 +23,7 @@ export async function createAmqpConnection(amqpUrl: string) {
   connection.on("disconnect", function (err) {
     console.log("Disconnected.", err);
   });
-  connection.createChannel();
+
   return connection;
 }
 
@@ -56,41 +56,57 @@ export function setupMessageConsumer(
   });
 
   channel_wrapper.consume(QUEUE_PRODUCER_NAME, async (message) => {
-    const idp = message.content.toString("utf8");
-    console.log(`received message : ${idp}`);
-
-    let status = 404;
-
-    if (MAP_FI_NAMES_TO_URL.hasOwnProperty(idp)) {
-      const url = MAP_FI_NAMES_TO_URL[idp]!;
-      console.log(`url : ${url}`);
-
-      try {
-        const response = await fetch(url, {
-          signal: AbortSignal.timeout(HTTP_TIMEOUT),
-          headers,
-        });
-        status = response.status;
-      } catch (err) {
-        console.log(err);
-        status = (err as any).response?.status || 500;
+    try {
+      // Validate message structure
+      if (!message?.content || !message?.properties) {
+        console.error("Malformed message received: missing content or properties");
+        channel_wrapper.nack(message, false, false);
+        return;
       }
+
+      const { correlationId, replyTo } = message.properties;
+      if (!correlationId || !replyTo) {
+        console.error("Message missing required properties (correlationId or replyTo)");
+        channel_wrapper.nack(message, false, false);
+        return;
+      }
+
+      const idp = message.content.toString("utf8");
+      console.log(`received message : ${idp}`);
+
+      let status = 404;
+
+      if (Object.hasOwn(MAP_FI_NAMES_TO_URL, idp)) {
+        const url = MAP_FI_NAMES_TO_URL[idp]!;
+        console.log(`url : ${url}`);
+
+        try {
+          const response = await fetch(url, {
+            signal: AbortSignal.timeout(HTTP_TIMEOUT),
+            headers,
+          });
+          status = response.status;
+        } catch (err) {
+          console.error("Fetch error:", err);
+          status = 500;
+        }
+      }
+
+      const options = {
+        correlationId,
+        contentType: "application/json",
+        expiration: HTTP_TIMEOUT,
+      };
+
+      console.log(`status : ${status}`);
+
+      channel_wrapper.sendToQueue(replyTo, JSON.stringify({ status }), options);
+      channel_wrapper.ack(message);
+    } catch (err) {
+      console.error("Error processing message:", err);
+      // Don't requeue on processing errors
+      channel_wrapper.nack(message, false, false);
     }
-
-    const options = {
-      correlationId: message.properties.correlationId,
-      contentType: "application/json",
-      expiration: HTTP_TIMEOUT,
-    };
-
-    console.log(`status : ${status}`);
-
-    channel_wrapper.sendToQueue(
-      message.properties.replyTo,
-      JSON.stringify({ status }),
-      options,
-    );
-    channel_wrapper.ack(message);
   });
 
   return channel_wrapper;

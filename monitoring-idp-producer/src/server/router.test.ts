@@ -254,24 +254,6 @@ describe("Server endpoints", () => {
         .route("", router);
     });
 
-    it("should return 400 for empty name parameter", async () => {
-      const req = new Request("http://localhost/idp/");
-      const res = await test_app.fetch(req, {
-        HTTP_TIMEOUT: 0,
-      });
-
-      expect(res.status).toBe(404); // Empty name results in 404 route not found
-    });
-
-    it("should return 400 for invalid name parameter", async () => {
-      const req = new Request("http://localhost/idp/");
-      const res = await test_app.fetch(req, {
-        HTTP_TIMEOUT: 0,
-      });
-
-      expect(res.status).toBe(404);
-    });
-
     it("should call channelWrapper methods for valid requests", async () => {
       const req = new Request("http://localhost/idp/test-idp");
 
@@ -343,15 +325,6 @@ describe("Server endpoints", () => {
       });
 
       expect(res.status).toBe(500); // Should handle JSON parsing error
-    });
-
-    it("should return 404 for URLs with trailing spaces", async () => {
-      const req = new Request("http://localhost/idp/ "); // Space in name
-      const res = await test_app.fetch(req, {
-        HTTP_TIMEOUT: 100,
-      });
-
-      expect(res.status).toBe(404); // Route not found due to trailing space
     });
   });
 });

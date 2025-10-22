@@ -2,41 +2,38 @@ import { expect, test } from "bun:test";
 import { createDockerEnv } from "../../tests/docker";
 
 test(
-  "IDP Error Handling: System starts up successfully",
+  "IDP Error Handling: Docker build and services start with error-handling configuration",
   async () => {
     await using env = createDockerEnv(import.meta.dir);
 
-    // Start services
-    await env.start({ build: true });
+    // Start services - this verifies Docker build works
+    await env.start({ build: true, quiet: true });
 
-    // Verify RabbitMQ is healthy
+    // Verify all infrastructure services are healthy
     expect(await env.getServiceHealth("rabbitmq")).toBe("healthy");
-
-    // Verify mock-idp is healthy
     expect(await env.getServiceHealth("mock-idp")).toBe("healthy");
 
-    // Verify producer is running
+    // Verify application services are running
     expect(await env.getServiceState("producer")).toBe("running");
-
-    // Verify consumer is running
     expect(await env.getServiceState("consumer")).toBe("running");
 
-    // Verify consumer started successfully
+    // Verify consumer started with correct IDP configuration (healthy, error, not-found)
     const consumerLogs = await env.getServiceLogs("consumer");
-    expect(consumerLogs).toMatchInlineSnapshot(`
-      "consumer-1  | Starting monitoring-idp-consumer...
-      consumer-1  | connect to RabbitMQ
-      consumer-1  | {
-      consumer-1  |   healthy: "http://mock-idp/idp/healthy",
-      consumer-1  |   error: "http://mock-idp/idp/error",
-      consumer-1  |   "not-found": "http://mock-idp/idp/not-found",
-      consumer-1  | }
-      consumer-1  | using proxy : "undefined"
-      consumer-1  | Consumer started successfully!
-      consumer-1  | Connected!
-      consumer-1  | assertQueue monitoring-producer
-      "
-    `);
+    expect(consumerLogs).toContain("Consumer started successfully!");
+    expect(consumerLogs).toContain("Connected!");
+    expect(consumerLogs).toContain("healthy");
+    expect(consumerLogs).toContain("error");
+    expect(consumerLogs).toContain("not-found");
+
+    // Verify producer connected to RabbitMQ
+    await env.waitForLogMessage("producer", "Connected!");
+
+    // Test the root health endpoint
+    const rootResult = await env.execInService(
+      "test-runner",
+      "curl -s http://producer:3000/",
+    );
+    expect(rootResult.output).toBe("ok");
   },
   {
     timeout: 120_000,

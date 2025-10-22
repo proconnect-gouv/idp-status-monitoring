@@ -235,8 +235,14 @@ export async function execInService(
   serviceName: string,
   command: string,
   cwd: string,
-): Promise<void> {
-  await runCompose(projectName, `exec ${serviceName} ${command}`, cwd);
+): Promise<{ exitCode: number; output: string }> {
+  const output = await runCompose(
+    projectName,
+    `exec ${serviceName} ${command}`,
+    cwd,
+    { capture: true },
+  );
+  return { exitCode: 0, output };
 }
 
 /**

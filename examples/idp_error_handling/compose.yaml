@@ -31,6 +31,7 @@ services:
       - IDP_URLS=["http://mock-idp/idp/healthy","http://mock-idp/idp/error","http://mock-idp/idp/not-found"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
+      - HTTP_TIMEOUT=10000
       - PORT=3000
     depends_on:
       rabbitmq:
@@ -47,9 +48,19 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
+      - HTTP_TIMEOUT=10000
       - MAP_FI_NAMES_TO_URL={"healthy":"http://mock-idp/idp/healthy","error":"http://mock-idp/idp/error","not-found":"http://mock-idp/idp/not-found"}
     depends_on:
       rabbitmq:
         condition: service_healthy
       mock-idp:
         condition: service_healthy
+
+  test-runner:
+    image: curlimages/curl:latest
+    depends_on:
+      - rabbitmq
+      - mock-idp
+      - producer
+      - consumer
+    entrypoint: ["sleep", "infinity"]

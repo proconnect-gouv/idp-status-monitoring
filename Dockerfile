@@ -2,7 +2,7 @@ FROM oven/bun:1-alpine AS deps
 
 WORKDIR /app
 
-COPY package.json bun.lock bunfig.toml tsconfig.json ./
+COPY package.json bun.lock tsconfig.json ./
 COPY monitoring-idp-consumer/package.json ./monitoring-idp-consumer/
 COPY monitoring-idp-producer/package.json ./monitoring-idp-producer/
 
