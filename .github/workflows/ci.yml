@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@364cc21a5de5b1ee4a7f5f9d3fa374ce0ccde746 # v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
 
       - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 #v2
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
         with:
           bun-version: latest
 
@@ -37,10 +37,10 @@ jobs:
 
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@364cc21a5de5b1ee4a7f5f9d3fa374ce0ccde746 # v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
 
       - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 #v2
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
         with:
           bun-version: latest
 
@@ -57,10 +57,10 @@ jobs:
 
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@364cc21a5de5b1ee4a7f5f9d3fa374ce0ccde746 # v4
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
 
       - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 #v2
+        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2.0.1
         with:
           bun-version: latest
 
