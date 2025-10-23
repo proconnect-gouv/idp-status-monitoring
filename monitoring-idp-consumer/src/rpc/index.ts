@@ -59,14 +59,18 @@ export function setupMessageConsumer(
     try {
       // Validate message structure
       if (!message?.content || !message?.properties) {
-        console.error("Malformed message received: missing content or properties");
+        console.error(
+          "Malformed message received: missing content or properties",
+        );
         channel_wrapper.nack(message, false, false);
         return;
       }
 
       const { correlationId, replyTo } = message.properties;
       if (!correlationId || !replyTo) {
-        console.error("Message missing required properties (correlationId or replyTo)");
+        console.error(
+          "Message missing required properties (correlationId or replyTo)",
+        );
         channel_wrapper.nack(message, false, false);
         return;
       }
