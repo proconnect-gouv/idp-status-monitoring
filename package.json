@@ -13,8 +13,7 @@
   },
   "prettier": {
     "plugins": [
-      "prettier-plugin-organize-imports",
-      "prettier-plugin-gherkin"
+      "prettier-plugin-organize-imports"
     ]
   },
   "devDependencies": {
