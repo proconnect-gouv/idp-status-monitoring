@@ -98,6 +98,10 @@ jobs:
         with:
           bun-version: latest
 
-      - name: 🔗 Run integration tests
+      - name: 📦 Install dependencies
+        run: docker compose pull
         working-directory: examples/${{ matrix.example }}
+
+      - name: 🔗 Run integration tests
         run: bun test
+        working-directory: examples/${{ matrix.example }}
