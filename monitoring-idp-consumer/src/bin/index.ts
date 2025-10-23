@@ -14,7 +14,7 @@ setupMessageConsumer(connection, config);
 
 // Health check server for Kubernetes probes
 const server = Bun.serve({
-  port: 3000,
+  port: config.PORT,
   routes: {
     // Liveness probe - checks if the application is alive
     "/health/live": () => Response.json({ status: "alive" }),

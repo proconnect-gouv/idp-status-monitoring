@@ -31,7 +31,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/kraken",
+        "curl -s -w '%{http_code}' http://producer/idp/kraken",
       );
       expect(result.output).toBe("'200'");
     },
@@ -42,7 +42,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/leviathan",
+        "curl -s -w '%{http_code}' http://producer/idp/leviathan",
       );
       expect(result.output).toBe("'200'");
     },
@@ -53,7 +53,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/behemoth",
+        "curl -s -w '%{http_code}' http://producer/idp/behemoth",
       );
       expect(result.output).toBe("'200'");
     },
@@ -64,7 +64,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/internet",
+        "curl -s -w '%{http_code}' http://producer/idp/internet",
       );
       const statusCode = result.output.match(/'(\d+)'/)?.[1];
       expect(statusCode).toBe("200");
@@ -102,7 +102,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/internet",
+        "curl -s -w '%{http_code}' http://producer/idp/internet",
       );
       const statusCode = result.output.match(/'(\d+)'/)?.[1];
       expect(statusCode).toBe("200");
@@ -118,7 +118,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/internet",
+        "curl -s -w '%{http_code}' http://producer/idp/internet",
       );
       const statusCode = result.output.match(/'(\d+)'/)?.[1];
       expect(statusCode).toBe("503");
@@ -134,7 +134,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/internet",
+        "curl -s -w '%{http_code}' http://producer/idp/internet",
       );
       const statusCode = result.output.match(/'(\d+)'/)?.[1];
       expect(statusCode).toBe("503");
@@ -146,7 +146,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/unknown",
+        "curl -s -w '%{http_code}' http://producer/idp/unknown",
       );
       expect(result.output).toBe("'404'");
     },

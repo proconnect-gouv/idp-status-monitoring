@@ -15,7 +15,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
   test.serial("🌐 Producer: GET / returns ok", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s http://producer:3000/",
+      "curl -s http://producer/",
     );
     expect(result.output).toBe("ok");
   });
@@ -25,7 +25,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/olympia",
+        "curl -s -w '%{http_code}' http://producer/idp/olympia",
       );
       expect(result.output).toBe("'200'");
     },
@@ -36,7 +36,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/medrengard",
+        "curl -s -w '%{http_code}' http://producer/idp/medrengard",
       );
       expect(result.output).toBe("'200'");
     },
@@ -45,7 +45,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
   test.serial("🌐 Producer: GET /idp/unknown returns 404", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/unknown",
+      "curl -s -w '%{http_code}' http://producer/idp/unknown",
     );
     expect(result.output).toBe("'404'");
   });
@@ -55,7 +55,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s http://producer:3000/idp/internet",
+        "curl -s http://producer/idp/internet",
       );
       const data = JSON.parse(result.output);
       expect(data).toMatchInlineSnapshot(`
@@ -81,7 +81,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/olympia",
+        "curl -s -w '%{http_code}' http://producer/idp/olympia",
       );
       expect(result.output).toBe("'200'");
     },
@@ -91,9 +91,9 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     "🛡️ Producer: Multiple siege attempts withstand assault",
     async () => {
       const results = await Promise.allSettled([
-        env.execInService("test_runner", "curl -s http://producer:3000/"),
-        env.execInService("test_runner", "curl -s http://producer:3000/"),
-        env.execInService("test_runner", "curl -s http://producer:3000/"),
+        env.execInService("test_runner", "curl -s http://producer/"),
+        env.execInService("test_runner", "curl -s http://producer/"),
+        env.execInService("test_runner", "curl -s http://producer/"),
       ]);
       expect(results).toMatchInlineSnapshot(`
       [
@@ -128,7 +128,7 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/medrengard",
+        "curl -s -w '%{http_code}' http://producer/idp/medrengard",
       );
       expect(result.output).toBe("'200'");
     },

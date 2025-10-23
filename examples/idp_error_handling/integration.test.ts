@@ -31,7 +31,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/fenris",
+        "curl -s -w '%{http_code}' http://producer/idp/fenris",
       );
       expect(result.output).toBe("'200'");
     },
@@ -42,7 +42,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/prospero",
+        "curl -s -w '%{http_code}' http://producer/idp/prospero",
       );
       expect(result.output).toBe("'500'");
     },
@@ -53,7 +53,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/sorcerers",
+        "curl -s -w '%{http_code}' http://producer/idp/sorcerers",
       );
       expect(result.output).toBe("'404'");
     },
@@ -64,7 +64,7 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s http://producer:3000/idp/internet",
+        "curl -s http://producer/idp/internet",
       );
       const data = JSON.parse(result.output);
       expect(data.successfuls).toBeDefined();

@@ -64,6 +64,7 @@ export const ConfigSchema = z.object({
     .union([z.record(z.string(), z.string()), parseJsonRecord])
     .default({})
     .transform((val) => (typeof val === "string" ? JSON.parse(val) : val)),
+  PORT: z.coerce.number().default(80),
   QUEUE_CONSUMER_NAME: z.string().default("monitoring-consumer"),
   QUEUE_PRODUCER_NAME: z.string().default("monitoring-producer"),
 });

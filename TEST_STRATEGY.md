@@ -3,18 +3,18 @@
 ## Summary
 
 **Before:** 24 passing unit tests, 2 failing integration tests (26 tests total)
-**After:** 45 passing unit tests, 4 passing integration tests (58 tests total)
+**After:** 45 passing unit tests, 44 passing integration tests (89 tests total)
 **Status:** ✅ All tests passing
 
 ### Test Breakdown
 
 - **Application Unit Tests:** 25 tests (consumer RPC, producer RPC, router)
 - **Mock Infrastructure Tests:** 20 tests (InMemoryConnection, InMemoryChannel)
-- **Integration Tests:** 4 examples with 13 total integration tests
-  - `idp_health_check_rpc`: 9 tests
-  - `idp_error_handling`: 9 tests
-  - `idp_proxy_middleware`: 9 tests
-  - `idp_cascading_failures`: 10 tests
+- **Integration Tests:** 4 examples with 44 total integration tests
+  - `idp_health_check_rpc`: 7 tests
+  - `idp_error_handling`: 7 tests
+  - `idp_proxy_middleware`: 15 tests
+  - `idp_cascading_failures`: 15 tests
 
 ## What Changed
 
@@ -155,14 +155,21 @@
 - ✅ Producer can access Imperial Fists IdPs via RPC through consumer (private network)
 - ✅ Network isolation prevents direct producer→fortress access
 
-#### IDP Error Handling
+#### IDP Cascading Failures (`examples/idp_cascading_failures/`)
 
-**What matters:** Services start with error-handling configuration
+**What matters:** Majority voting logic works correctly when services fail
 
-- ✅ All services start with error scenarios configured
-- ✅ Consumer loads multiple IDP configurations (healthy, error, not-found)
-- ✅ Producer connects to RabbitMQ successfully
-- ✅ Root HTTP endpoint responds
+- ✅ Docker builds with 3 Tyranid Hive Fleet IdPs (Kraken, Leviathan, Behemoth)
+- ✅ All services start and connect to RabbitMQ
+- ✅ Consumer loads all 3 IDP configurations
+- ✅ Individual RPC calls to each IdP work correctly
+- ✅ Aggregated `/idp/internet` returns 200 when all 3 operational (3/3)
+- ✅ Stop Behemoth → `/idp/internet` returns 200 (2/3 majority healthy)
+- ✅ Stop Leviathan → `/idp/internet` returns 503 (1/3 minority healthy)
+- ✅ Stop Kraken → `/idp/internet` returns 503 (0/3 all failed)
+- ✅ Unknown IdP names return 404
+- ✅ Fetch timeout mechanism works (HTTP_TIMEOUT=100ms)
+- ✅ Fetch errors return `status: 0` for unreachable services
 
 ## Why This Test Strategy Matters
 
@@ -204,10 +211,12 @@ bun test examples/
 
 ### 1. IDP Health Aggregation (`/idp/internet`)
 
-- ✅ Fetches all configured IDPs
-- ✅ Categorizes responses (200-399 = success)
-- ✅ Returns 503 when majority fail
+- ✅ Fetches all configured IDPs with timeout (`AbortSignal.timeout(HTTP_TIMEOUT)`)
+- ✅ Catches fetch errors and returns `status: 0` for unreachable services
+- ✅ Categorizes responses (200-399 = success, others = fail)
+- ✅ Returns 503 when majority fail (unsucessfuls.length < successfuls.length ? 200 : 503)
 - ✅ Handles empty IDP lists
+- ✅ Tested with real service failures in integration tests
 
 ### 2. RPC Message Flow (`/idp/:name`)
 
@@ -324,7 +333,20 @@ All integration tests follow consistent patterns:
 
 - **Consistent env creation**: `const env = createDockerEnv(import.meta.dir);`
 - **Serial execution**: All tests use `test.serial()` to avoid race conditions
-- **Wait for log messages**: Use `waitForLogMessage()` for RabbitMQ connections instead of checking service state
+- **No waitForLogMessage**: All examples rely on Docker healthchecks via `--wait` flag
 - **Structured test flow**: Setup → Consumer checks → Producer checks → Endpoint tests → Cleanup
 - **Fast healthchecks**: All compose files use 1s intervals for rapid startup
+- **Producer healthchecks**: All use `wget http://127.0.0.1:3000/`
+- **Consumer healthchecks**: All use `wget http://127.0.0.1:3000/health/ready`
 - **Clean shutdown**: All tests use `env[Symbol.asyncDispose]()` with 30s timeout
+- **Inline snapshots**: Complex JSON responses validated with `toMatchInlineSnapshot()`
+
+### Cascading Failures Pattern
+
+The `idp_cascading_failures` example demonstrates a unique pattern:
+
+- **Sequential service stops**: Each test stops one service, next test verifies behavior
+- **No restart needed**: Tests run in sequence (3/3 → 2/3 → 1/3 → 0/3)
+- **Fast timeouts**: `HTTP_TIMEOUT=100ms` for rapid failure detection
+- **Fetch error handling**: Router catches network errors and returns `status: 0`
+- **AbortSignal timeout**: Uses `fetch(url, { signal: AbortSignal.timeout(HTTP_TIMEOUT) })`

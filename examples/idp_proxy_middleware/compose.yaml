@@ -80,7 +80,6 @@ services:
       - IDP_URLS=["http://auth.olympia.ironwarriors","http://auth.medrengard.ironwarriors"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - PORT=3000
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -96,7 +95,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://127.0.0.1:3000/",
+          "http://127.0.0.1/",
         ]
       interval: 1s
       timeout: 1s
@@ -127,7 +126,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://127.0.0.1:3000/health/ready",
+          "http://127.0.0.1/health/ready",
         ]
       interval: 5s
       timeout: 3s

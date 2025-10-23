@@ -24,4 +24,7 @@ app.use((context, next) => {
 
 app.route("", router);
 
-export default app;
+export default {
+  fetch: app.fetch,
+  port: config.PORT,
+};

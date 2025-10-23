@@ -30,7 +30,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/inner-circle",
+        "curl -s -w '%{http_code}' http://producer/idp/inner-circle",
       );
       expect(result.output).toBe("'200'");
     },
@@ -41,7 +41,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer:3000/idp/fallen-angels",
+        "curl -s -w '%{http_code}' http://producer/idp/fallen-angels",
       );
       expect(result.output).toBe("'200'");
     },
@@ -50,7 +50,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
   test.serial("❌ GET /idp/unknown - RPC to unknown IDP", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s -w '%{http_code}' http://producer:3000/idp/unknown",
+      "curl -s -w '%{http_code}' http://producer/idp/unknown",
     );
     expect(result.output).toBe("'404'");
   });
@@ -58,7 +58,7 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
   test.serial("📊 GET /idp/internet - Aggregated health check", async () => {
     const result = await env.execInService(
       "test_runner",
-      "curl -s http://producer:3000/idp/internet",
+      "curl -s http://producer/idp/internet",
     );
     const data = JSON.parse(result.output);
     expect(data.successfuls).toBeDefined();

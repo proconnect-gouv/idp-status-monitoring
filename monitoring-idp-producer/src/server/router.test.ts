@@ -24,6 +24,7 @@ describe("GET /idp/internet - Aggregation logic", () => {
     });
 
     const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
       IDP_URLS: mockUrls,
     });
 
@@ -60,6 +61,7 @@ describe("GET /idp/internet - Aggregation logic", () => {
     const req = new Request("http://localhost/idp/internet");
 
     const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
       IDP_URLS: mockUrls,
     });
 
@@ -96,6 +98,7 @@ describe("GET /idp/internet - Aggregation logic", () => {
     const req = new Request("http://localhost/idp/internet");
 
     const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
       IDP_URLS: mockUrls,
     });
 
@@ -127,6 +130,7 @@ describe("GET /idp/internet - Aggregation logic", () => {
     const req = new Request("http://localhost/idp/internet");
 
     const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
       IDP_URLS: mockUrls,
     });
 
@@ -182,6 +186,7 @@ describe("GET /idp/internet - Aggregation logic", () => {
     const req = new Request("http://localhost/idp/internet");
 
     const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
       IDP_URLS: mockUrls,
     });
 
