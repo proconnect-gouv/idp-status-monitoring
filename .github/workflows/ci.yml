@@ -51,34 +51,6 @@ jobs:
         working-directory: ${{ matrix.workspace }}
         run: bun test
 
-  integration-tests:
-    runs-on: ubuntu-latest
-    name: 🔗 Integration Tests (${{ matrix.example }})
-    strategy:
-      matrix:
-        example:
-          - idp_cascading_failures
-          - idp_error_handling
-          - idp_health_check_rpc
-          - idp_proxy_middleware
-          - idp_resilience
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v5
-
-      - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-
-      - name: 📦 Install dependencies
-        run: bun install --frozen-lockfile
-
-      - name: 🔗 Run integration tests
-        working-directory: examples/${{ matrix.example }}
-        run: bun test
-
   typecheck:
     runs-on: ubuntu-latest
     name: 🔍 TypeCheck

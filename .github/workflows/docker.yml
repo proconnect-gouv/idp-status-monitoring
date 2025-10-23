@@ -57,38 +57,47 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  test:
-    name: 🚥 Examples tests
+  integration-tests:
     runs-on: ubuntu-latest
+    name: 🔗 Integration Tests (${{ matrix.example }})
     needs: build
+    strategy:
+      matrix:
+        example:
+          - idp_cascading_failures
+          - idp_error_handling
+          - idp_health_check_rpc
+          - idp_proxy_middleware
+          - idp_resilience
 
     steps:
       - name: 📥 Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: 🔧 Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 🏗️ Build consumer for testing
+      - name: 🏗️ Build consumer
         uses: docker/build-push-action@v5
         with:
-          context: .
-          target: consumer
-          load: true          tags: monitoring-consumer:test
           cache-from: type=gha
-
-      - name: 🏗️ Build producer for testing
-        uses: docker/build-push-action@v5
-        with:
           context: .
-          target: producer
           load: true
+          target: consumer
+
+      - name: 🏗️ Build producer
+        uses: docker/build-push-action@v5
+        with:
           cache-from: type=gha
+          context: .
+          load: true
+          target: producer
 
       - name: 🔧 Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
-      - name: 🧪 Test consumer
-        run: bun test examples
+      - name: 🔗 Run integration tests
+        working-directory: examples/${{ matrix.example }}
+        run: bun test
