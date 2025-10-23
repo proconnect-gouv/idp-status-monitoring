@@ -49,7 +49,7 @@ jobs:
 
       - name: 🧪 Run tests
         working-directory: ${{ matrix.workspace }}
-        run: bun test 
+        run: bun test
 
   typecheck:
     runs-on: ubuntu-latest
