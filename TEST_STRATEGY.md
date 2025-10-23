@@ -3,18 +3,19 @@
 ## Summary
 
 **Before:** 24 passing unit tests, 2 failing integration tests (26 tests total)
-**After:** 45 passing unit tests, 44 passing integration tests (89 tests total)
+**After:** 47 passing unit tests, 53 passing integration tests (100 tests total)
 **Status:** ✅ All tests passing
 
 ### Test Breakdown
 
-- **Application Unit Tests:** 25 tests (consumer RPC, producer RPC, router)
+- **Application Unit Tests:** 27 tests (consumer RPC, producer RPC, router)
 - **Mock Infrastructure Tests:** 20 tests (InMemoryConnection, InMemoryChannel)
-- **Integration Tests:** 4 examples with 44 total integration tests
-  - `idp_health_check_rpc`: 7 tests
-  - `idp_error_handling`: 7 tests
-  - `idp_proxy_middleware`: 15 tests
-  - `idp_cascading_failures`: 15 tests
+- **Integration Tests:** 5 examples with 53 total integration tests
+  - `idp_health_check_rpc`: 8 tests
+  - `idp_error_handling`: 8 tests
+  - `idp_proxy_middleware`: 10 tests
+  - `idp_cascading_failures`: 16 tests
+  - `idp_resilience`: 9 tests
 
 ## What Changed
 
@@ -171,6 +172,16 @@
 - ✅ Fetch timeout mechanism works (HTTP_TIMEOUT=100ms)
 - ✅ Fetch errors return `status: 0` for unreachable services
 
+#### IDP Resilience (`examples/idp_resilience/`)
+
+**What matters:** System gracefully degrades when RabbitMQ fails
+
+- ✅ Docker builds with 2 Ultramarines IdPs (Macragge, Calth)
+- ✅ All services start and RPC communication works
+- ✅ Stop RabbitMQ → RPC calls timeout (503)
+- ✅ Direct HTTP checks continue working during RabbitMQ outage
+- ✅ System demonstrates partial degradation pattern
+
 ## Why This Test Strategy Matters
 
 ### Unit Tests Provide Deep Coverage
@@ -325,7 +336,7 @@ This test suite provides:
 - **Timeout & concurrency coverage** for production reliability
 - **Reliable test infrastructure** with tested mocks
 
-The 58 tests cover all critical business logic, edge cases for timeouts and high-concurrency scenarios, AND the test infrastructure itself, ensuring comprehensive and reliable test coverage.
+The 100 tests cover all critical business logic, edge cases for timeouts and high-concurrency scenarios, infrastructure resilience, AND the test infrastructure itself, ensuring comprehensive and reliable test coverage.
 
 ## Integration Test Consistency
 
@@ -336,8 +347,9 @@ All integration tests follow consistent patterns:
 - **No waitForLogMessage**: All examples rely on Docker healthchecks via `--wait` flag
 - **Structured test flow**: Setup → Consumer checks → Producer checks → Endpoint tests → Cleanup
 - **Fast healthchecks**: All compose files use 1s intervals for rapid startup
-- **Producer healthchecks**: All use `wget http://127.0.0.1:3000/`
-- **Consumer healthchecks**: All use `wget http://127.0.0.1:3000/health/ready`
+- **Producer healthchecks**: All use `wget http://127.0.0.1/` (port 80)
+- **Consumer healthchecks**: All use `wget http://127.0.0.1/health/ready` (port 80)
+- **Default port 80**: Both services default to port 80 (removed PORT=3000 from compose files)
 - **Clean shutdown**: All tests use `env[Symbol.asyncDispose]()` with 30s timeout
 - **Inline snapshots**: Complex JSON responses validated with `toMatchInlineSnapshot()`
 

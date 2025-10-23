@@ -2,13 +2,13 @@
 
 ## High Priority
 
-- [ ] Fix mermaid diagrams: Internet on root graph, intranet as subgraph
-- [ ] Review RabbitMQ documentation: Verify proxy_middleware README diagram shows RabbitMQ on both networks
-
 ## Medium Priority
 
 - [ ] Enhance main README: Add architecture overview, examples index, development guide
-- [ ] Add resilience tests: RabbitMQ failures, consumer restarts, network issues
+
+## Low Priority
+
+- [ ] Add performance tests: Load testing, concurrent request handling
 
 ## Completed ✅
 
@@ -24,3 +24,8 @@
 - [x] Fix cascading failures: Added fetch error handling with AbortSignal.timeout
 - [x] Optimize test timeouts: HTTP_TIMEOUT=100ms in cascading_failures example
 - [x] Remove waitForLogMessage: All examples rely on Docker healthchecks
+- [x] Change default port to 80: Producer and consumer now default to port 80 instead of 3000
+- [x] Remove :3000 from examples: All compose files and tests use default port 80
+- [x] Fix mermaid diagrams: Internet on root graph (no subgraph), intranet as subgraph only where network isolation exists
+- [x] Fix proxy.conf: Updated upstream server from producer:3000 to producer:80
+- [x] Add resilience tests: Created idp_resilience example testing RabbitMQ failure graceful degradation

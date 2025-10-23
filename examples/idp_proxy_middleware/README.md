@@ -10,15 +10,17 @@ graph TB
     producer["📤 producer<br/>(External Monitor)"]
     olympia["🔨 auth.olympia.ironwarriors"]
     medrengard["⚔️ auth.medrengard.ironwarriors"]
+    proxy["🚪 proxy"]
     rabbitmq["🐰 RabbitMQ<br/>(Fortified Vox)"]
 
-    subgraph fortress["🏰 Fortress Network"]
+    subgraph fortress["🏰 fortress-network"]
         consumer["📥 consumer<br/>(Internal Monitor)"]
         phalanx["🛡️ auth.phalanx.imperialfists"]
         inwit["🏛️ auth.inwit.imperialfists"]
     end
 
-    test -->|GET /idp/X| producer
+    test -->|":8080/idp/X"| proxy
+    proxy -->|"/idp/X"| producer
     producer -->|query| olympia
     producer -->|query| medrengard
     producer -->|RPC| rabbitmq
