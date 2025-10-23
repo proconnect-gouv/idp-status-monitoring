@@ -1,0 +1,17 @@
+{
+  "name": "monitoring-idp-consumer",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#src/*": "./src/*/index.ts"
+  },
+  "dependencies": {
+    "amqp-connection-manager": "5.0.0",
+    "amqplib": "0.10.9",
+    "uuid": "13.0.0",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "@types/amqplib": "0.10.7"
+  }
+}

@@ -1,0 +1,109 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  auth.rock.darkangels:
+    image: nginx:alpine
+    volumes:
+      - ./auth.rock.darkangels.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  auth.caliban.darkangels:
+    image: nginx:alpine
+    volumes:
+      - ./auth.caliban.darkangels.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  producer:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: producer
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - IDP_URLS=["http://auth.rock.darkangels","http://auth.caliban.darkangels"]
+      - QUEUE_PRODUCER_NAME=monitoring-producer
+      - QUEUE_CONSUMER_NAME=monitoring-consumer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      auth.rock.darkangels:
+        condition: service_healthy
+      auth.caliban.darkangels:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1/",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  consumer:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: consumer
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - QUEUE_PRODUCER_NAME=monitoring-producer
+      - QUEUE_CONSUMER_NAME=monitoring-consumer
+      - MAP_FI_NAMES_TO_URL={"rock":"http://auth.rock.darkangels","caliban":"http://auth.caliban.darkangels","inner-circle":"http://auth.rock.darkangels","fallen-angels":"http://auth.caliban.darkangels"}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      auth.rock.darkangels:
+        condition: service_healthy
+      auth.caliban.darkangels:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1/health/ready",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+
+  test_runner:
+    image: curlimages/curl:latest
+    depends_on:
+      - rabbitmq
+      - auth.rock.darkangels
+      - auth.caliban.darkangels
+      - producer
+      - consumer
+    entrypoint: ["sleep", "infinity"]

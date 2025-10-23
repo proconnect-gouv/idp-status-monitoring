@@ -1,0 +1,7 @@
+.git
+.github
+*.md
+**/*.test.ts
+examples
+node_modules
+testing

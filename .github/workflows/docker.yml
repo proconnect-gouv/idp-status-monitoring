@@ -1,0 +1,112 @@
+name: 🐳 Docker Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        target:
+          - consumer
+          - producer
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ github.token }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/${{ matrix.target }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🏗️ Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          platforms: linux/amd64,linux/arm64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    name: 🔗 Integration Tests (${{ matrix.example }})
+    needs: build
+    strategy:
+      matrix:
+        example:
+          - idp_cascading_failures
+          - idp_error_handling
+          - idp_health_check_rpc
+          - idp_proxy_middleware
+          - idp_resilience
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v5
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build consumer
+        uses: docker/build-push-action@v5
+        with:
+          cache-from: type=gha
+          context: .
+          load: true
+          target: consumer
+
+      - name: 🏗️ Build producer
+        uses: docker/build-push-action@v5
+        with:
+          cache-from: type=gha
+          context: .
+          load: true
+          target: producer
+
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: 🔧 Set up Docker Compose
+        uses: docker/setup-compose-action@364cc21a5de5b1ee4a7f5f9d3fa374ce0ccde746 # v1.2.0
+        with:
+          version: latest
+
+      - name: 📦 Pull dependencies
+        run: docker compose pull
+        working-directory: examples/${{ matrix.example }}
+
+      - name: 🔗 Run integration tests
+        run: bun test
+        working-directory: examples/${{ matrix.example }}

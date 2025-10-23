@@ -1,0 +1,172 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+    networks:
+      - default
+      - fortress-network
+
+  auth.olympia.ironwarriors:
+    image: nginx:alpine
+    volumes:
+      - ./auth.olympia.ironwarriors.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  auth.medrengard.ironwarriors:
+    image: nginx:alpine
+    volumes:
+      - ./auth.medrengard.ironwarriors.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  auth.phalanx.imperialfists:
+    image: nginx:alpine
+    volumes:
+      - ./auth.phalanx.imperialfists.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+    networks:
+      - fortress-network
+
+  auth.inwit.imperialfists:
+    image: nginx:alpine
+    volumes:
+      - ./auth.inwit.imperialfists.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/health || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+    networks:
+      - fortress-network
+
+  producer:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: producer
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - IDP_URLS=["http://auth.olympia.ironwarriors","http://auth.medrengard.ironwarriors"]
+      - QUEUE_PRODUCER_NAME=monitoring-producer
+      - QUEUE_CONSUMER_NAME=monitoring-consumer
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      auth.olympia.ironwarriors:
+        condition: service_healthy
+      auth.medrengard.ironwarriors:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1/",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  consumer:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: consumer
+    environment:
+      - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - QUEUE_PRODUCER_NAME=monitoring-producer
+      - QUEUE_CONSUMER_NAME=monitoring-consumer
+      - MAP_FI_NAMES_TO_URL={"olympia":"http://auth.phalanx.imperialfists","medrengard":"http://auth.inwit.imperialfists"}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      auth.phalanx.imperialfists:
+        condition: service_healthy
+      auth.inwit.imperialfists:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1/health/ready",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fortress-network
+
+  proxy:
+    image: nginx:alpine
+    volumes:
+      - ./proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      producer:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://127.0.0.1/ || exit 1",
+        ]
+      interval: 1s
+      timeout: 1s
+      retries: 5
+
+  test_runner:
+    image: curlimages/curl:latest
+    depends_on:
+      - rabbitmq
+      - auth.olympia.ironwarriors
+      - auth.medrengard.ironwarriors
+      - auth.phalanx.imperialfists
+      - auth.inwit.imperialfists
+      - producer
+      - consumer
+      - proxy
+    entrypoint: ["sleep", "infinity"]
+
+networks:
+  fortress-network:
+    driver: bridge
