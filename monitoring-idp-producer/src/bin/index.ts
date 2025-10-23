@@ -14,15 +14,13 @@ const channelWrapper = setupRpcProducer(connection, config);
 
 //
 
-const app = new Hono<ServerContext>();
-
-app.use((context, next) => {
-  Object.assign(context.env, config);
-  context.set("channelWrapper", channelWrapper);
-  return next();
-});
-
-app.route("", router);
+const app = new Hono<ServerContext>()
+  .use((context, next) => {
+    Object.assign(context.env, config);
+    context.set("channelWrapper", channelWrapper);
+    return next();
+  })
+  .route("", router);
 
 export default {
   fetch: app.fetch,
