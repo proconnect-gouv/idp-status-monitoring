@@ -59,7 +59,6 @@ services:
       - IDP_URLS=["http://auth.fenris.spacewolves","http://auth.prospero.thousandsons","http://auth.sorcerers.thousandsons"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - HTTP_TIMEOUT=10000
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -92,7 +91,6 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - QUEUE_CONSUMER_NAME=monitoring-consumer
-      - HTTP_TIMEOUT=10000
       - MAP_FI_NAMES_TO_URL={"fenris":"http://auth.fenris.spacewolves","prospero":"http://auth.prospero.thousandsons","sorcerers":"http://auth.sorcerers.thousandsons"}
     depends_on:
       rabbitmq:
