@@ -28,30 +28,8 @@ export class DockerComposeEnv {
     await startServices(this.projectName, this.cwd, options);
   }
 
-  async getServiceHealth(serviceName: string) {
-    return getServiceHealth(this.projectName, serviceName, this.cwd);
-  }
-
-  async getServiceState(serviceName: string) {
-    return getServiceState(this.projectName, serviceName, this.cwd);
-  }
-
   async getServiceLogs(serviceName: string) {
     return getServiceLogs(this.projectName, serviceName, this.cwd);
-  }
-
-  async waitForLogMessage(
-    serviceName: string,
-    expectedMessage: string,
-    options?: { timeout?: number; interval?: number },
-  ) {
-    return waitForLogMessage(
-      this.projectName,
-      serviceName,
-      expectedMessage,
-      this.cwd,
-      options,
-    );
   }
 
   async execInService(serviceName: string, command: string) {
@@ -60,6 +38,10 @@ export class DockerComposeEnv {
 
   async stopService(serviceName: string) {
     await runCompose(this.projectName, `stop ${serviceName}`, this.cwd);
+  }
+
+  async startService(serviceName: string) {
+    await runCompose(this.projectName, `start ${serviceName}`, this.cwd);
   }
 }
 
@@ -155,30 +137,6 @@ export async function getServiceStatus(
 }
 
 /**
- * Get service health status
- */
-export async function getServiceHealth(
-  projectName: string,
-  serviceName: string,
-  cwd: string,
-): Promise<string | undefined> {
-  const status = await getServiceStatus(projectName, serviceName, cwd);
-  return status.Health;
-}
-
-/**
- * Get service state
- */
-export async function getServiceState(
-  projectName: string,
-  serviceName: string,
-  cwd: string,
-): Promise<string> {
-  const status = await getServiceStatus(projectName, serviceName, cwd);
-  return status.State;
-}
-
-/**
  * Get service logs
  */
 export async function getServiceLogs(
@@ -189,13 +147,6 @@ export async function getServiceLogs(
   return await runCompose(projectName, `logs ${serviceName}`, cwd, {
     capture: true,
   });
-}
-
-/**
- * Setup docker test - returns project name from current directory
- */
-export function setupDockerTest(currentDir: string): string {
-  return basename(currentDir);
 }
 
 /**
@@ -251,42 +202,4 @@ export async function execInService(
     { capture: true },
   );
   return { exitCode: 0, output };
-}
-
-/**
- * Wait for a specific string to appear in service logs
- */
-export async function waitForLogMessage(
-  projectName: string,
-  serviceName: string,
-  expectedMessage: string,
-  cwd: string,
-  options: { timeout?: number; interval?: number } = {},
-): Promise<void> {
-  const timeout = options.timeout ?? 30000; // 30 seconds default
-  const interval = options.interval ?? 500; // 500ms default
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeout) {
-    const logs = await getServiceLogs(projectName, serviceName, cwd);
-    if (logs.includes(expectedMessage)) {
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, interval));
-  }
-
-  throw new Error(
-    `Timeout waiting for "${expectedMessage}" in ${serviceName} logs after ${timeout}ms`,
-  );
-}
-
-/**
- * Stop a specific service
- */
-export async function stopService(
-  projectName: string,
-  serviceName: string,
-  cwd: string,
-): Promise<void> {
-  await runCompose(projectName, `stop ${serviceName}`, cwd);
 }

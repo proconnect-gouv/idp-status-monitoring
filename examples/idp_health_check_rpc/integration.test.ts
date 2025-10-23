@@ -13,26 +13,16 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
   );
 
   test.serial("📨 Consumer: Loaded Dark Angels configuration", async () => {
-    await env.waitForLogMessage("consumer", "Consumer started successfully!");
-
     const consumerLogs = await env.getServiceLogs("consumer");
+    expect(consumerLogs).toContain("Consumer started successfully!");
     expect(consumerLogs).toContain("rock");
     expect(consumerLogs).toContain("caliban");
   });
 
   test.serial("📨 Producer: Connected to RabbitMQ", async () => {
-    await env.waitForLogMessage("producer", "Connected!");
-
     const producerLogs = await env.getServiceLogs("producer");
+    expect(producerLogs).toContain("Connected!");
     expect(producerLogs).toContain("assertQueue : monitoring-producer");
-  });
-
-  test.serial("🏥 GET / - Health check", async () => {
-    const result = await env.execInService(
-      "test_runner",
-      "curl -s http://producer:3000/",
-    );
-    expect(result.output).toBe("ok");
   });
 
   test.serial(

@@ -20,14 +20,23 @@ export const router = new Hono<ServerContext>()
     return text("ok");
   })
   .get("/idp/internet", async ({ env, json, status }) => {
-    const { IDP_URLS } = env;
+    const { HTTP_TIMEOUT, IDP_URLS } = env;
 
     const requests = IDP_URLS.map(async (url) => {
-      const response = await fetch(url);
-      return {
-        status: response.status,
-        url,
-      };
+      try {
+        const response = await fetch(url, {
+          signal: AbortSignal.timeout(HTTP_TIMEOUT),
+        });
+        return {
+          status: response.status,
+          url,
+        };
+      } catch {
+        return {
+          status: 0,
+          url,
+        };
+      }
     });
     const responses = await Promise.all(requests);
 
