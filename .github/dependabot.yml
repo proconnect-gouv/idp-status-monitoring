@@ -9,6 +9,66 @@ updates:
       interval: "weekly"
     versioning-strategy: increase
 
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    labels:
+      - dependencies
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    labels:
+      - dependencies
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/examples/idp_cascading_failures"
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/examples/idp_error_handling"
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/examples/idp_health_check_rpc"
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/examples/idp_proxy_middleware"
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker-compose"
+    directory: "/examples/idp_resilience"
+    commit-message:
+      prefix: ":arrow_upper_right: [patch]"
+      include: "scope"
+    schedule:
+      interval: "weekly"
+
   - package-ecosystem: "npm"
     directory: "/monitoring-idp-consumer"
     commit-message:
@@ -26,53 +86,3 @@ updates:
     schedule:
       interval: "weekly"
     versioning-strategy: increase
-
-  - package-ecosystem: "docker"
-    directory: "/examples/idp_cascading_failures"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "docker"
-    directory: "/examples/idp_error_handling"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "docker"
-    directory: "/examples/idp_health_check_rpc"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "docker"
-    directory: "/examples/idp_proxy_middleware"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "docker"
-    directory: "/examples/idp_resilience"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    labels:
-      - dependencies
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
