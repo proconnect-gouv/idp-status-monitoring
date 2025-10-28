@@ -68,21 +68,3 @@ updates:
       include: "scope"
     schedule:
       interval: "weekly"
-
-  - package-ecosystem: "npm"
-    directory: "/monitoring-idp-consumer"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-    versioning-strategy: increase
-
-  - package-ecosystem: "npm"
-    directory: "/monitoring-idp-producer"
-    commit-message:
-      prefix: ":arrow_upper_right: [patch]"
-      include: "scope"
-    schedule:
-      interval: "weekly"
-    versioning-strategy: increase
