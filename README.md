@@ -1,4 +1,4 @@
-# Monitoring
+# IDP Status Monitoring
 
 This application provides a way to access status endpoints available on the **RIE (Réseau Interministériel de l'État)** from the public internet, for the purpose of displaying their status on our public status page.
 
