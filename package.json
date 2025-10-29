@@ -1,9 +1,9 @@
 {
-  "name": "monitoring",
+  "name": "idp-status-monitoring",
   "private": true,
   "workspaces": [
-    "monitoring-idp-consumer",
-    "monitoring-idp-producer"
+    "idp-status-monitoring-consumer",
+    "idp-status-monitoring-producer"
   ],
   "scripts": {
     "format": "prettier --write .",

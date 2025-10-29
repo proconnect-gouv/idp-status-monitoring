@@ -1,6 +1,8 @@
 # Monitoring
 
-> 📡 Monitoring tools for our infra
+This application provides a way to access status endpoints available on the **RIE (Réseau Interministériel de l'État)** from the public internet, for the purpose of displaying their status on our public status page.
+
+HTTP requests initiated by the status platform are converted into messages in a **RabbitMQ** queue by the _producer_, and then transformed back into HTTP calls within the RIE by the _consumer_.
 
 ## Docker Build
 

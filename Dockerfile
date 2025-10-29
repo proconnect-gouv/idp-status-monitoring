@@ -3,20 +3,20 @@ FROM oven/bun:1-alpine AS deps
 WORKDIR /app
 
 COPY package.json bun.lock tsconfig.json ./
-COPY monitoring-idp-consumer/package.json ./monitoring-idp-consumer/
-COPY monitoring-idp-producer/package.json ./monitoring-idp-producer/
+COPY idp-status-monitoring-consumer/package.json ./idp-status-monitoring-consumer/
+COPY idp-status-monitoring-producer/package.json ./idp-status-monitoring-producer/
 
 RUN bun install --frozen-lockfile --production
 
 FROM deps AS build-consumer
-COPY monitoring-idp-consumer/src/ ./monitoring-idp-consumer/src/
+COPY idp-status-monitoring-consumer/src/ ./idp-status-monitoring-consumer/src/
 RUN bun build --compile --minify --sourcemap \
-  monitoring-idp-consumer/src/bin/index.ts --outfile=consumer
+  idp-status-monitoring-consumer/src/bin/index.ts --outfile=consumer
 
 FROM deps AS build-producer
-COPY monitoring-idp-producer/src/ ./monitoring-idp-producer/src/
+COPY idp-status-monitoring-producer/src/ ./idp-status-monitoring-producer/src/
 RUN bun build --compile --minify --sourcemap \
-  monitoring-idp-producer/src/bin/index.ts --outfile=producer
+  idp-status-monitoring-producer/src/bin/index.ts --outfile=producer
 
 FROM alpine:latest AS base-runtime
 RUN apk add --no-cache ca-certificates libstdc++ libgcc

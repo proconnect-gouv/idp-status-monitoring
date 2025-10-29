@@ -3,7 +3,7 @@
 import { ConfigSchema } from "#src/config";
 import { createAmqpConnection, setupMessageConsumer } from "#src/rpc";
 
-console.log("Starting monitoring-idp-consumer...");
+console.log("Starting idp-status-monitoring-consumer...");
 
 // Load configuration
 const config = await ConfigSchema.parseAsync(process.env);

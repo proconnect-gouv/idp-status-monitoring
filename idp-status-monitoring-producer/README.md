@@ -1,4 +1,4 @@
-# monitoring-idp-producer
+# idp-status-monitoring-producer
 
 HTTP server exposing IDP health endpoints.
 

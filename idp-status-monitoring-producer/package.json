@@ -1,5 +1,5 @@
 {
-  "name": "monitoring-idp-producer",
+  "name": "idp-status-monitoring-producer",
   "private": true,
   "type": "module",
   "imports": {
