@@ -1,4 +1,4 @@
-# monitoring-idp-consumer
+# idp-status-monitoring-consumer
 
 RPC worker executing IDP health checks.
 
