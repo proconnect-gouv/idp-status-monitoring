@@ -32,7 +32,7 @@ jobs:
     strategy:
       matrix:
         workspace:
-          # - idp-status-monitoring-consumer
+          - idp-status-monitoring-consumer
           - idp-status-monitoring-producer
 
     steps:
