@@ -73,7 +73,7 @@ jobs:
 
       - name: 📦 Upload digest
         if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@ea165f8d65b6c742c47dd558b4ad9bb5e3f6f2d3 # v6.0.0
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: digests-${{ matrix.target }}-${{ matrix.arch }}
           path: ${{ runner.temp }}/digests
