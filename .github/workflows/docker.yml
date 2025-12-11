@@ -106,7 +106,7 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           for image in $(ls digests); do
-            readarray -t args < <(jq -r '(.annotations[]|"--annotation=\(.)"),(.tags[]|"--tag=\(.)")' < "digests/$image/meta.json")
+            readarray -t args < <(jq -r '(.tags[]|"--tag=\(.)")' < "digests/$image/meta.json")
             docker buildx imagetools create "${args[@]}" $(cat digests/$image/*.digest)
             docker buildx imagetools inspect $(jq -r '.tags[0]' < "digests/$image/meta.json")
           done
