@@ -30,7 +30,7 @@
         "@hono/zod-validator": "0.7.4",
         "amqp-connection-manager": "5.0.0",
         "amqplib": "0.10.9",
-        "hono": "4.10.2",
+        "hono": "4.11.7",
         "uuid": "13.0.0",
         "zod": "4.1.12",
       },
@@ -62,7 +62,7 @@
 
     "csstype": ["csstype@3.2.3", "", {}, "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="],
 
-    "hono": ["hono@4.10.2", "", {}, "sha512-p6fyzl+mQo6uhESLxbF5WlBOAJMDh36PljwlKtP5V1v09NxlqGru3ShK+4wKhSuhuYf8qxMmrivHOa/M7q0sMg=="],
+    "hono": ["hono@4.11.7", "", {}, "sha512-l7qMiNee7t82bH3SeyUCt9UF15EVmaBvsppY2zQtrbIhl/yzBTny+YUxsVjSjQ6gaqaeVtZmGocom8TzBlA4Yw=="],
 
     "idp-status-monitoring-consumer": ["idp-status-monitoring-consumer@workspace:idp-status-monitoring-consumer"],
 
