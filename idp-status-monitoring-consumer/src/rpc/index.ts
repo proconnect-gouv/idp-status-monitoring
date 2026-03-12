@@ -6,6 +6,36 @@ import amqp, {
   type Channel,
 } from "amqp-connection-manager";
 
+export async function checkIdpStatus(
+  idpName: string,
+  config: {
+    MAP_FI_NAMES_TO_URL: Record<string, string>;
+    HTTP_TIMEOUT: number;
+    HTTP_ACCEPT: string;
+    HTTP_USER_AGENT: string;
+  },
+): Promise<number> {
+  if (!Object.hasOwn(config.MAP_FI_NAMES_TO_URL, idpName)) {
+    return 404;
+  }
+
+  const url = config.MAP_FI_NAMES_TO_URL[idpName]!;
+  const headers = new Headers({
+    Accept: config.HTTP_ACCEPT,
+    "User-Agent": config.HTTP_USER_AGENT,
+  });
+
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(config.HTTP_TIMEOUT),
+      headers,
+    });
+    return response.status;
+  } catch {
+    return 500;
+  }
+}
+
 export async function createAmqpConnection(amqpUrl: string) {
   console.log("connect to RabbitMQ");
 
@@ -31,18 +61,7 @@ export function setupMessageConsumer(
   connection: AmqpConnectionManager,
   config: Config,
 ) {
-  const {
-    QUEUE_PRODUCER_NAME,
-    MAP_FI_NAMES_TO_URL,
-    HTTP_TIMEOUT,
-    HTTP_USER_AGENT,
-    HTTP_ACCEPT,
-  } = config;
-
-  const headers = new Headers({
-    Accept: HTTP_ACCEPT,
-    "User-Agent": HTTP_USER_AGENT,
-  });
+  const { QUEUE_PRODUCER_NAME, MAP_FI_NAMES_TO_URL, HTTP_TIMEOUT } = config;
 
   console.log(MAP_FI_NAMES_TO_URL);
   console.log(`using proxy : "${process.env.HTTPS_PROXY}"`);
@@ -78,31 +97,15 @@ export function setupMessageConsumer(
       const idp = message.content.toString("utf8");
       console.log(`received message : ${idp}`);
 
-      let status = 404;
+      const status = await checkIdpStatus(idp, config);
 
-      if (Object.hasOwn(MAP_FI_NAMES_TO_URL, idp)) {
-        const url = MAP_FI_NAMES_TO_URL[idp]!;
-        console.log(`url : ${url}`);
-
-        try {
-          const response = await fetch(url, {
-            signal: AbortSignal.timeout(HTTP_TIMEOUT),
-            headers,
-          });
-          status = response.status;
-        } catch (err) {
-          console.error("Fetch error:", err);
-          status = 500;
-        }
-      }
+      console.log(`status : ${status}`);
 
       const options = {
         correlationId,
         contentType: "application/json",
         expiration: HTTP_TIMEOUT,
       };
-
-      console.log(`status : ${status}`);
 
       channel_wrapper.sendToQueue(replyTo, JSON.stringify({ status }), options);
       channel_wrapper.ack(message);
