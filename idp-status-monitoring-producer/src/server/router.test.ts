@@ -169,6 +169,67 @@ describe("GET /idp/internet - Aggregation logic", () => {
     expect(res.status).toBe(503);
   });
 
+  it("should return status 0 with error when fetch throws", async () => {
+    const mockUrls = ["https://idp1.test"];
+
+    fetchSpy.mockRejectedValue(new Error("Network failure"));
+
+    const req = new Request("http://localhost/idp/internet");
+
+    const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
+      IDP_URLS: mockUrls,
+    });
+
+    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+      {
+        "successfuls": [],
+        "unsucessfuls": [
+          {
+            "error": "Network failure",
+            "status": 0,
+            "url": "https://idp1.test",
+          },
+        ],
+      }
+    `);
+    expect(res.status).toBe(503);
+  });
+
+  it("should handle mix of successful responses and fetch errors", async () => {
+    const mockUrls = ["https://idp1.test", "https://idp2.test"];
+
+    fetchSpy
+      .mockResolvedValueOnce({ status: 200 })
+      .mockRejectedValueOnce(new Error("Connection refused"));
+
+    const req = new Request("http://localhost/idp/internet");
+
+    const res = await router.fetch(req, {
+      HTTP_TIMEOUT: 0,
+      IDP_URLS: mockUrls,
+    });
+
+    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+      {
+        "successfuls": [
+          {
+            "status": 200,
+            "url": "https://idp1.test",
+          },
+        ],
+        "unsucessfuls": [
+          {
+            "error": "Connection refused",
+            "status": 0,
+            "url": "https://idp2.test",
+          },
+        ],
+      }
+    `);
+    expect(res.status).toBe(503);
+  });
+
   it("should correctly categorize different HTTP status codes", async () => {
     const mockUrls = [
       "https://idp1.test",

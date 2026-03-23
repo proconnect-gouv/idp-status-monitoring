@@ -31,10 +31,11 @@ export const router = new Hono<ServerContext>()
           status: response.status,
           url,
         };
-      } catch {
+      } catch (e) {
         return {
           status: 0,
           url,
+          error: e instanceof Error ? e.message : String(e),
         };
       }
     });
