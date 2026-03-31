@@ -22,8 +22,8 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
 
   test.serial("📨 Producer: Connected to RabbitMQ", async () => {
     const producerLogs = await env.getServiceLogs("producer");
-    expect(producerLogs).toContain("Connected!");
-    expect(producerLogs).toContain("assertQueue : monitoring-producer");
+    expect(producerLogs).toContain("Connected to RabbitMQ");
+    expect(producerLogs).toContain('Asserting queue "monitoring-producer"');
   });
 
   test.serial(
