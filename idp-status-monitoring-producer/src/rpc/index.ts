@@ -5,23 +5,23 @@ import amqp, {
   type AmqpConnectionManager,
   type Channel,
 } from "amqp-connection-manager";
+import consola from "consola";
 
 export async function createAmqpConnection(amqpUrl: string) {
-  console.log("connect to RabbitMQ");
+  consola.info("Connecting to RabbitMQ...");
 
   const connection = await amqp.connect([amqpUrl]);
 
   connection.on("connect", function () {
-    console.log("Connected!");
+    consola.info("Connected to RabbitMQ");
   });
 
   connection.on("connectFailed", function (err) {
-    console.log(err);
-    console.log("Failed to connect!");
+    consola.error("Failed to connect to RabbitMQ", err);
   });
 
   connection.on("disconnect", function (err) {
-    console.log("Disconnected.", err);
+    consola.warn("Disconnected from RabbitMQ", err);
   });
 
   return connection;
@@ -35,8 +35,8 @@ export function setupRpcProducer(
 
   const channel_wrapper = connection.createChannel({
     setup: (channel: Channel) => {
-      console.log(`assertQueue : ${QUEUE_PRODUCER_NAME}`);
-      console.log(`assertQueue : ${QUEUE_CONSUMER_NAME}`);
+      consola.info(`Asserting queue "${QUEUE_PRODUCER_NAME}"`);
+      consola.info(`Asserting queue "${QUEUE_CONSUMER_NAME}"`);
 
       return Promise.all([
         channel.assertQueue(QUEUE_PRODUCER_NAME, { durable: true }),
@@ -50,7 +50,7 @@ export function setupRpcProducer(
     try {
       // Validate message structure
       if (!message?.content || !message?.properties) {
-        console.error(
+        consola.error(
           "Malformed message received: missing content or properties",
         );
         channel_wrapper.nack(message, false, false);
@@ -59,18 +59,18 @@ export function setupRpcProducer(
 
       const { correlationId } = message.properties;
       if (!correlationId) {
-        console.error("Message missing required correlationId property");
+        consola.error("Message missing required correlationId property");
         channel_wrapper.nack(message, false, false);
         return;
       }
 
       const content = message.content.toString("utf8");
-      console.log(`received message : ${correlationId} - ${content}`);
+      consola.debug(`Received message: ${correlationId} - ${content}`);
 
       channel_wrapper.emit(correlationId, content);
       channel_wrapper.ack(message);
     } catch (err) {
-      console.error("Error processing message:", err);
+      consola.error("Error processing message:", err);
       // Don't requeue on processing errors
       channel_wrapper.nack(message, false, false);
     }

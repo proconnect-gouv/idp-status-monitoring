@@ -3,11 +3,13 @@
 import { ConfigSchema } from "#src/config";
 import { createAmqpConnection, setupMessageConsumer } from "#src/rpc";
 import { createRoutes } from "#src/server";
-
-console.log("Starting idp-status-monitoring-consumer...");
+import consola from "consola";
 
 // Load configuration
 const config = await ConfigSchema.parseAsync(process.env);
+consola.level = config.LOG_LEVEL;
+
+consola.info("Starting idp-status-monitoring-consumer...");
 
 // Setup consumer
 const connection = await createAmqpConnection(config.AMQP_URL);
@@ -22,4 +24,4 @@ const server = Bun.serve({
   },
 });
 
-console.log(`Consumer started successfully! ${server.url}`);
+consola.info(`Consumer started successfully! ${server.url}`);
