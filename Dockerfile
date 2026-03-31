@@ -19,18 +19,24 @@ RUN bun build --compile --minify --sourcemap \
   idp-status-monitoring-producer/src/bin/index.ts --outfile=producer
 
 FROM alpine:latest AS base-runtime
-RUN apk add --no-cache ca-certificates libstdc++ libgcc
+RUN apk add --no-cache ca-certificates libstdc++ libgcc libcap
 RUN addgroup -g 1001 -S bun && adduser -S bun -u 1001
-USER bun
 
 FROM base-runtime AS consumer
 COPY --from=build-consumer --chown=bun:bun /app/consumer /usr/local/bin/
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/bin/consumer
+USER bun
 CMD ["consumer"]
 
 FROM base-runtime AS producer
 COPY --from=build-producer --chown=bun:bun /app/producer /usr/local/bin/
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/bin/producer
+USER bun
 CMD ["producer"]
 
 FROM base-runtime AS monitoring
 COPY --from=build-consumer --chown=bun:bun /app/consumer /usr/local/bin/
 COPY --from=build-producer --chown=bun:bun /app/producer /usr/local/bin/
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/bin/consumer && \
+    setcap 'cap_net_bind_service=+ep' /usr/local/bin/producer
+USER bun
