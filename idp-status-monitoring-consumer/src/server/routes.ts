@@ -39,7 +39,20 @@ const handler = (cb: BunCallback): BunCallback => {
   };
 };
 
-export function createRoutes(getConnectionStatus: () => boolean) {
+export function createRoutes(
+  getConnectionStatus: () => boolean,
+  config: {
+    MAP_FI_NAMES_TO_URL: Record<string, string>;
+    HTTP_TIMEOUT: number;
+    HTTP_ACCEPT: string;
+    HTTP_USER_AGENT: string;
+  } = {
+    MAP_FI_NAMES_TO_URL: {},
+    HTTP_TIMEOUT: 5000,
+    HTTP_ACCEPT: "*/*",
+    HTTP_USER_AGENT: "",
+  },
+) {
   return {
     "/health/live": handler(() => Response.json({ status: "alive" })),
 
@@ -62,6 +75,39 @@ export function createRoutes(getConnectionStatus: () => boolean) {
         },
         { status: isConnected ? 200 : 503 },
       );
+    }),
+
+    "/health/idps": handler(async () => {
+      const requests = Object.entries(config.MAP_FI_NAMES_TO_URL).map(
+        async ([name, url]) => {
+          try {
+            const response = await fetch(url, {
+              signal: AbortSignal.timeout(config.HTTP_TIMEOUT),
+              headers: new Headers({
+                Accept: config.HTTP_ACCEPT,
+                "User-Agent": config.HTTP_USER_AGENT,
+              }),
+            });
+            return { name, url, status: response.status };
+          } catch (e) {
+            consola.warn(`xxx GET ${url}`, e);
+            return {
+              name,
+              url,
+              status: 0,
+              error: e instanceof Error ? e.message : String(e),
+            };
+          }
+        },
+      );
+      const responses = await Promise.all(requests);
+      const successfuls = responses.filter(
+        ({ status }) => status >= 200 && status < 400,
+      );
+      const unsucessfuls = responses.filter(
+        ({ status }) => status < 200 || status >= 400,
+      );
+      return Response.json({ successfuls, unsucessfuls });
     }),
   };
 }
