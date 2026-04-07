@@ -1,4 +1,7 @@
+import type { Config } from "#src/config";
+import type { AmqpConnectionManager } from "amqp-connection-manager";
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
+import type { ServerContext } from "./context";
 import { createRoutes } from "./routes";
 
 describe("GET /health routes", () => {
@@ -169,26 +172,28 @@ describe("GET /health/idps", () => {
 
 //
 
+const defaultConfig = {
+  MAP_FI_NAMES_TO_URL: {},
+  HTTP_TIMEOUT: 5000,
+  HTTP_ACCEPT: "*/*",
+  HTTP_USER_AGENT: "test-agent",
+};
+
 function createTestServer({
   isConnected = true,
-  config = {
-    MAP_FI_NAMES_TO_URL: {},
-    HTTP_TIMEOUT: 5000,
-    HTTP_ACCEPT: "*/*",
-    HTTP_USER_AGENT: "test-agent",
-  },
+  config = {},
 }: {
   isConnected?: boolean;
-  config?: {
-    MAP_FI_NAMES_TO_URL: Record<string, string>;
-    HTTP_TIMEOUT: number;
-    HTTP_ACCEPT: string;
-    HTTP_USER_AGENT: string;
-  };
+  config?: Partial<typeof defaultConfig>;
 } = {}) {
+  const mergedConfig = { ...defaultConfig, ...config } as unknown as Config;
+  const connection = isConnected
+    ? ({ isConnected: () => true } as unknown as AmqpConnectionManager)
+    : null;
+  const context: ServerContext = { connection, config: mergedConfig };
   return Bun.serve({
     port: 0,
-    routes: createRoutes(() => isConnected, config),
+    routes: createRoutes(context),
     fetch() {
       return new Response("Not Found", { status: 404 });
     },
