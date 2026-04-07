@@ -18,7 +18,7 @@ setupMessageConsumer(connection, config);
 // Health check server for Kubernetes probes
 const server = Bun.serve({
   port: config.PORT,
-  routes: createRoutes(() => connection.isConnected()),
+  routes: createRoutes(() => connection.isConnected(), config),
   fetch() {
     return new Response("Not Found", { status: 404 });
   },
