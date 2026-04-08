@@ -4,10 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
 import type { ServerContext } from "./context";
 import { createRoutes } from "./routes";
 
-describe("GET /health routes", () => {
-  it("GET /health/live returns 200 with alive status", async () => {
+describe("GET health routes", () => {
+  it("GET /livez returns 200 with alive status", async () => {
     using server = createTestServer();
-    const res = await fetch(`${server.url}/health/live`);
+    const res = await fetch(`${server.url}/livez`);
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toMatchInlineSnapshot(`
@@ -17,9 +17,9 @@ describe("GET /health routes", () => {
     `);
   });
 
-  it("GET /health/startup returns 200 with started status", async () => {
+  it("GET /startupz returns 200 with started status", async () => {
     using server = createTestServer();
-    const res = await fetch(`${server.url}/health/startup`);
+    const res = await fetch(`${server.url}/startupz`);
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toMatchInlineSnapshot(`
@@ -29,9 +29,9 @@ describe("GET /health routes", () => {
     `);
   });
 
-  it("GET /health returns 200 with health info", async () => {
+  it("GET /healthz returns 200 with health info", async () => {
     using server = createTestServer();
-    const res = await fetch(`${server.url}/health`);
+    const res = await fetch(`${server.url}/healthz`);
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -44,9 +44,9 @@ describe("GET /health routes", () => {
     expect(typeof body.timestamp).toBe("string");
   });
 
-  it("GET /health/ready returns 200 when connected", async () => {
+  it("GET /readyz returns 200 when connected", async () => {
     using server = createTestServer();
-    const res = await fetch(`${server.url}/health/ready`);
+    const res = await fetch(`${server.url}/readyz`);
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toMatchInlineSnapshot(`
@@ -57,9 +57,9 @@ describe("GET /health routes", () => {
     `);
   });
 
-  it("GET /health/ready returns 503 when disconnected", async () => {
+  it("GET /readyz returns 503 when disconnected", async () => {
     using server = createTestServer({ isConnected: false });
-    const res = await fetch(`${server.url}/health/ready`);
+    const res = await fetch(`${server.url}/readyz`);
 
     expect(res.status).toBe(503);
     await expect(res.json()).resolves.toMatchInlineSnapshot(`
@@ -78,7 +78,7 @@ describe("GET /health routes", () => {
   });
 });
 
-describe("GET /health/idps", () => {
+describe("GET /readyz/idps", () => {
   let fetchSpy: ReturnType<typeof spyOn>;
   let originalFetch: typeof global.fetch;
 
@@ -93,7 +93,7 @@ describe("GET /health/idps", () => {
 
   it("returns 200 with empty lists when no IDPs configured", async () => {
     using server = createTestServer();
-    const res = await originalFetch(`${server.url}/health/idps`);
+    const res = await originalFetch(`${server.url}/readyz/idps`);
 
     expect(res.status).toBe(200);
     await expect(res.json()).resolves.toMatchInlineSnapshot(`
@@ -115,7 +115,7 @@ describe("GET /health/idps", () => {
         HTTP_USER_AGENT: "test-agent",
       },
     });
-    const res = await originalFetch(`${server.url}/health/idps`);
+    const res = await originalFetch(`${server.url}/readyz/idps`);
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -142,7 +142,7 @@ describe("GET /health/idps", () => {
         HTTP_USER_AGENT: "test-agent",
       },
     });
-    const res = await originalFetch(`${server.url}/health/idps`);
+    const res = await originalFetch(`${server.url}/readyz/idps`);
 
     expect(res.status).toBe(200);
     const body = (await res.json()) as {

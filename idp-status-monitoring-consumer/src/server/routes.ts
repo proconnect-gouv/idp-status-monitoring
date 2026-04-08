@@ -42,11 +42,11 @@ const handler = (cb: BunCallback): BunCallback => {
 
 export function createRoutes(context: ServerContext) {
   return {
-    "/health/live": handler(() => Response.json({ status: "alive" })),
+    "/livez": handler(() => Response.json({ status: "alive" })),
 
-    "/health/startup": handler(() => Response.json({ status: "started" })),
+    "/startupz": handler(() => Response.json({ status: "started" })),
 
-    "/health": handler(() =>
+    "/healthz": handler(() =>
       Response.json({
         status: "ok",
         uptime: process.uptime(),
@@ -54,7 +54,7 @@ export function createRoutes(context: ServerContext) {
       }),
     ),
 
-    "/health/ready": handler(() => {
+    "/readyz": handler(() => {
       const isConnected = context.connection?.isConnected() ?? false;
       return Response.json(
         {
@@ -65,7 +65,7 @@ export function createRoutes(context: ServerContext) {
       );
     }),
 
-    "/health/idps": handler(async () => {
+    "/readyz/idps": handler(async () => {
       const { config } = context;
       const requests = Object.entries(
         config.MAP_FI_NAMES_TO_URL as Record<string, string>,
