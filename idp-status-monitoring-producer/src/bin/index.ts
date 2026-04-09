@@ -22,6 +22,7 @@ const app = new Hono<ServerContext>()
   .use((context, next) => {
     Object.assign(context.env, config);
     context.set("channelWrapper", channelWrapper);
+    context.set("connection", connection);
     return next();
   })
   .route("", router);
