@@ -1,5 +1,80 @@
 import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
+import { Hono } from "hono";
+import type { ServerContext } from "./context";
 import { router } from "./router";
+
+const makeApp = (connection: { isConnected: () => boolean } | null = null) =>
+  new Hono<ServerContext>()
+    .use((c, next) => {
+      c.set("connection", connection as any);
+      return next();
+    })
+    .route("", router);
+
+describe("GET /livez", () => {
+  it("should return 200 with alive status", async () => {
+    const res = await router.fetch(new Request("http://localhost/livez"), {});
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+      {
+        "status": "alive",
+      }
+    `);
+  });
+});
+
+describe("GET /healthz", () => {
+  it("should return 200 with uptime and timestamp", async () => {
+    const res = await router.fetch(new Request("http://localhost/healthz"), {});
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      status: string;
+      uptime: number;
+      timestamp: string;
+    };
+    expect(body.status).toBe("ok");
+    expect(typeof body.uptime).toBe("number");
+    expect(typeof body.timestamp).toBe("string");
+  });
+});
+
+describe("GET /readyz", () => {
+  it("should return 200 when AMQP is connected", async () => {
+    const app = makeApp({ isConnected: () => true });
+    const res = await app.fetch(new Request("http://localhost/readyz"), {});
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+      {
+        "amqp": "connected",
+        "status": "ready",
+      }
+    `);
+  });
+
+  it("should return 503 when AMQP is disconnected", async () => {
+    const app = makeApp({ isConnected: () => false });
+    const res = await app.fetch(new Request("http://localhost/readyz"), {});
+    expect(res.status).toBe(503);
+    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+      {
+        "amqp": "disconnected",
+        "status": "not ready",
+      }
+    `);
+  });
+
+  it("should return 503 when connection is null", async () => {
+    const app = makeApp(null);
+    const res = await app.fetch(new Request("http://localhost/readyz"), {});
+    expect(res.status).toBe(503);
+    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+      {
+        "amqp": "disconnected",
+        "status": "not ready",
+      }
+    `);
+  });
+});
 
 describe("GET /idp/internet - Aggregation logic", () => {
   let fetchSpy: any;

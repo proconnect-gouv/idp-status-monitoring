@@ -39,6 +39,24 @@ export const router = new Hono<ServerContext>()
   .get("/", ({ text }) => {
     return text("ok");
   })
+  .get("/livez", ({ json }) => json({ status: "alive" }))
+  .get("/healthz", ({ json }) =>
+    json({
+      status: "ok",
+      uptime: process.uptime(),
+      timestamp: new Date().toISOString(),
+    }),
+  )
+  .get("/readyz", ({ var: { connection }, json }) => {
+    const isConnected = connection?.isConnected() ?? false;
+    return json(
+      {
+        status: isConnected ? "ready" : "not ready",
+        amqp: isConnected ? "connected" : "disconnected",
+      },
+      isConnected ? 200 : 503,
+    );
+  })
   .get("/idp/internet", async ({ env, json, status }) => {
     const { HTTP_TIMEOUT, IDP_URLS } = env;
 
