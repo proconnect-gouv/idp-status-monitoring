@@ -51,27 +51,31 @@ describe("IDP Monitoring via Proxy: Split-network architecture with internet and
   });
 
   test.serial(
-    "🌐 Producer: GET /idp/internet returns aggregated health from external IDPs",
+    "🌐 Producer: GET /idp/internet streams health from external IDPs",
     async () => {
       const result = await env.execInService(
         "test_runner",
         "curl -s http://producer/idp/internet",
       );
-      const data = JSON.parse(result.output);
-      expect(data).toMatchInlineSnapshot(`
-        {
-          "successfuls": [
-            {
-              "status": 200,
-              "url": "http://auth.olympia.ironwarriors",
-            },
-            {
-              "status": 200,
-              "url": "http://auth.medrengard.ironwarriors",
-            },
-          ],
-          "unsucessfuls": [],
-        }
+      const lines = result.output
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+        .map((line: string) => JSON.parse(line))
+        .sort((a: { url: string }, b: { url: string }) =>
+          a.url.localeCompare(b.url),
+        );
+      expect(lines).toMatchInlineSnapshot(`
+        [
+          {
+            "status": 200,
+            "url": "http://auth.medrengard.ironwarriors",
+          },
+          {
+            "status": 200,
+            "url": "http://auth.olympia.ironwarriors",
+          },
+        ]
       `);
     },
   );
