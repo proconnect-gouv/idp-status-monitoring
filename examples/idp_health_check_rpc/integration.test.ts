@@ -55,15 +55,18 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
     expect(result.output).toBe("'404'");
   });
 
-  test.serial("📊 GET /idp/internet - Aggregated health check", async () => {
+  test.serial("📊 GET /idp/internet - Streamed health check", async () => {
     const result = await env.execInService(
       "test_runner",
       "curl -s http://producer/idp/internet",
     );
-    const data = JSON.parse(result.output);
-    expect(data.successfuls).toBeDefined();
-    expect(data.unsucessfuls).toBeDefined();
-    expect(data.successfuls.length).toBeGreaterThan(0);
+    const lines = result.output
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .map((line: string) => JSON.parse(line));
+    expect(lines.length).toBeGreaterThan(0);
+    expect(lines.every((entry: { url: string }) => entry.url)).toBe(true);
   });
 
   test.serial(

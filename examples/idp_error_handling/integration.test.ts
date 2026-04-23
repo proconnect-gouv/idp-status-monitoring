@@ -60,17 +60,25 @@ describe("IDP Error Handling: Graceful handling of various error scenarios", () 
   );
 
   test.serial(
-    "📊 GET /idp/internet - Aggregated health includes errors",
+    "📊 GET /idp/internet - Streamed health includes errors",
     async () => {
       const result = await env.execInService(
         "test_runner",
         "curl -s http://producer/idp/internet",
       );
-      const data = JSON.parse(result.output);
-      expect(data.successfuls).toBeDefined();
-      expect(data.unsucessfuls).toBeDefined();
-      expect(data.successfuls.length).toBeGreaterThan(0);
-      expect(data.unsucessfuls.length).toBeGreaterThan(0);
+      const lines = result.output
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+        .map((line: string) => JSON.parse(line));
+      const successes = lines.filter(
+        (e: { status: number }) => e.status >= 200 && e.status < 400,
+      );
+      const failures = lines.filter(
+        (e: { status: number }) => e.status === 0 || e.status >= 400,
+      );
+      expect(successes.length).toBeGreaterThan(0);
+      expect(failures.length).toBeGreaterThan(0);
     },
   );
 

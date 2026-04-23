@@ -76,7 +76,17 @@ describe("GET /readyz", () => {
   });
 });
 
-describe("GET /idp/internet - Aggregation logic", () => {
+const parseNDJSON = async (res: Response) => {
+  const text = await res.text();
+  return text
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => JSON.parse(line))
+    .sort((a, b) => a.url.localeCompare(b.url));
+};
+
+describe("GET /idp/internet - NDJSON streaming", () => {
   let fetchSpy: any;
 
   beforeEach(() => {
@@ -87,269 +97,93 @@ describe("GET /idp/internet - Aggregation logic", () => {
     fetchSpy.mockRestore();
   });
 
-  it("should return 200 when all IDP URLs are successful", async () => {
-    const mockUrls = ["https://idp1.test", "https://idp2.test"];
+  it("should stream one line per URL", async () => {
+    fetchSpy.mockResolvedValue({ status: 200 });
 
-    fetchSpy.mockResolvedValue({
-      status: 200,
-    });
-
-    const req = new Request("http://localhost/idp/internet", {
-      headers: { "Content-Type": "application/json" },
-    });
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+    const res = await router.fetch(
+      new Request("http://localhost/idp/internet"),
       {
-        "successfuls": [
-          {
-            "status": 200,
-            "url": "https://idp1.test",
-          },
-          {
-            "status": 200,
-            "url": "https://idp2.test",
-          },
-        ],
-        "unsucessfuls": [],
-      }
-    `);
+        HTTP_TIMEOUT: 0,
+        IDP_URLS: ["https://idp1.test", "https://idp2.test"],
+      },
+    );
+
     expect(res.status).toBe(200);
-  });
-
-  it("should return 503 when more URLs fail than succeed", async () => {
-    const mockUrls = [
-      "https://idp1.test",
-      "https://idp2.test",
-      "https://idp3.test",
-    ];
-
-    fetchSpy
-      .mockResolvedValueOnce({ status: 200 })
-      .mockResolvedValueOnce({ status: 500 })
-      .mockResolvedValueOnce({ status: 404 });
-
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
-      {
-        "successfuls": [
-          {
-            "status": 200,
-            "url": "https://idp1.test",
-          },
-        ],
-        "unsucessfuls": [
-          {
-            "status": 500,
-            "url": "https://idp2.test",
-          },
-          {
-            "status": 404,
-            "url": "https://idp3.test",
-          },
-        ],
-      }
-    `);
-    expect(res.status).toBe(503);
-  });
-
-  it("should return 503 when all URLs fail", async () => {
-    const mockUrls = ["https://idp1.test", "https://idp2.test"];
-
-    fetchSpy.mockResolvedValue({
-      status: 500,
-    });
-
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
-      {
-        "successfuls": [],
-        "unsucessfuls": [
-          {
-            "status": 500,
-            "url": "https://idp1.test",
-          },
-          {
-            "status": 500,
-            "url": "https://idp2.test",
-          },
-        ],
-      }
-    `);
-    expect(res.status).toBe(503);
-  });
-
-  it("should return 503 when equal numbers succeed and fail", async () => {
-    const mockUrls = ["https://idp1.test", "https://idp2.test"];
-
-    fetchSpy
-      .mockResolvedValueOnce({ status: 200 })
-      .mockResolvedValueOnce({ status: 500 });
-
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    expect(res.status).toBe(503);
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
-      {
-        "successfuls": [
-          {
-            "status": 200,
-            "url": "https://idp1.test",
-          },
-        ],
-        "unsucessfuls": [
-          {
-            "status": 500,
-            "url": "https://idp2.test",
-          },
-        ],
-      }
+    await expect(parseNDJSON(res)).resolves.toMatchInlineSnapshot(`
+      [
+        {
+          "status": 200,
+          "url": "https://idp1.test",
+        },
+        {
+          "status": 200,
+          "url": "https://idp2.test",
+        },
+      ]
     `);
   });
 
-  it("should return 503 for empty IDP_URLS array", async () => {
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      IDP_URLS: [],
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
-      {
-        "successfuls": [],
-        "unsucessfuls": [],
-      }
-    `);
-    expect(res.status).toBe(503);
-  });
-
-  it("should return status 0 with error when fetch throws", async () => {
-    const mockUrls = ["https://idp1.test"];
-
+  it("should stream status 0 with error when fetch throws", async () => {
     fetchSpy.mockRejectedValue(new Error("Network failure"));
 
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+    const res = await router.fetch(
+      new Request("http://localhost/idp/internet"),
       {
-        "successfuls": [],
-        "unsucessfuls": [
-          {
-            "error": "Network failure",
-            "status": 0,
-            "url": "https://idp1.test",
-          },
-        ],
-      }
+        HTTP_TIMEOUT: 0,
+        IDP_URLS: ["https://idp1.test"],
+      },
+    );
+
+    expect(res.status).toBe(200);
+    await expect(parseNDJSON(res)).resolves.toMatchInlineSnapshot(`
+      [
+        {
+          "error": "Network failure",
+          "status": 0,
+          "url": "https://idp1.test",
+        },
+      ]
     `);
-    expect(res.status).toBe(503);
   });
 
-  it("should handle mix of successful responses and fetch errors", async () => {
-    const mockUrls = ["https://idp1.test", "https://idp2.test"];
-
+  it("should stream mix of successes and errors", async () => {
     fetchSpy
       .mockResolvedValueOnce({ status: 200 })
       .mockRejectedValueOnce(new Error("Connection refused"));
 
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+    const res = await router.fetch(
+      new Request("http://localhost/idp/internet"),
       {
-        "successfuls": [
-          {
-            "status": 200,
-            "url": "https://idp1.test",
-          },
-        ],
-        "unsucessfuls": [
-          {
-            "error": "Connection refused",
-            "status": 0,
-            "url": "https://idp2.test",
-          },
-        ],
-      }
+        HTTP_TIMEOUT: 0,
+        IDP_URLS: ["https://idp1.test", "https://idp2.test"],
+      },
+    );
+
+    expect(res.status).toBe(200);
+    await expect(parseNDJSON(res)).resolves.toMatchInlineSnapshot(`
+      [
+        {
+          "status": 200,
+          "url": "https://idp1.test",
+        },
+        {
+          "error": "Connection refused",
+          "status": 0,
+          "url": "https://idp2.test",
+        },
+      ]
     `);
-    expect(res.status).toBe(503);
   });
 
-  it("should correctly categorize different HTTP status codes", async () => {
-    const mockUrls = [
-      "https://idp1.test",
-      "https://idp2.test",
-      "https://idp3.test",
-      "https://idp4.test",
-    ];
-
-    fetchSpy
-      .mockResolvedValueOnce({ status: 200 })
-      .mockResolvedValueOnce({ status: 301 })
-      .mockResolvedValueOnce({ status: 404 })
-      .mockResolvedValueOnce({ status: 100 });
-
-    const req = new Request("http://localhost/idp/internet");
-
-    const res = await router.fetch(req, {
-      HTTP_TIMEOUT: 0,
-      IDP_URLS: mockUrls,
-    });
-
-    await expect(res.json()).resolves.toMatchInlineSnapshot(`
+  it("should return empty body for empty IDP_URLS", async () => {
+    const res = await router.fetch(
+      new Request("http://localhost/idp/internet"),
       {
-        "successfuls": [
-          {
-            "status": 200,
-            "url": "https://idp1.test",
-          },
-          {
-            "status": 301,
-            "url": "https://idp2.test",
-          },
-        ],
-        "unsucessfuls": [
-          {
-            "status": 404,
-            "url": "https://idp3.test",
-          },
-          {
-            "status": 100,
-            "url": "https://idp4.test",
-          },
-        ],
-      }
-    `);
-    expect(res.status).toBe(503);
+        IDP_URLS: [],
+      },
+    );
+
+    expect(res.status).toBe(200);
+    await expect(parseNDJSON(res)).resolves.toMatchInlineSnapshot(`[]`);
   });
 });

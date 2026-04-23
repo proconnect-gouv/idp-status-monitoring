@@ -3,6 +3,7 @@
 import { zValidator } from "@hono/zod-validator";
 import consola from "consola";
 import { Hono } from "hono";
+import { stream } from "hono/streaming";
 import type { StatusCode } from "hono/utils/http-status";
 import { v4 as uuid } from "uuid";
 import z from "zod";
@@ -57,47 +58,34 @@ export const router = new Hono<ServerContext>()
       isConnected ? 200 : 503,
     );
   })
-  .get("/idp/internet", async ({ env, json, status }) => {
-    const { HTTP_TIMEOUT, IDP_URLS } = env;
+  .get("/idp/internet", (c) => {
+    const { HTTP_TIMEOUT, IDP_URLS } = c.env;
 
-    const requests = IDP_URLS.map(async (url) => {
-      const start = Date.now();
-      consola.log(`--> GET ${url}`);
-      try {
-        const response = await fetch(url, {
-          signal: AbortSignal.timeout(HTTP_TIMEOUT),
-        });
-        consola.log(
-          `<-- GET ${url} ${colorStatus(response.status)} ${elapsed(start)}`,
-        );
-        return {
-          status: response.status,
-          url,
-        };
-      } catch (e) {
-        consola.warn(`xxx GET ${url} ${elapsed(start)}`, e);
-        return {
-          status: 0,
-          url,
-          error: e instanceof Error ? e.message : String(e),
-        };
-      }
-    });
-    const responses = await Promise.all(requests);
-
-    const successfuls = responses.filter(
-      (response) => response.status >= 200 && response.status < 400,
-    );
-
-    const unsucessfuls = responses.filter(
-      (response) => response.status < 200 || response.status >= 400,
-    );
-
-    status(unsucessfuls.length < successfuls.length ? 200 : 503);
-
-    return json({
-      successfuls,
-      unsucessfuls,
+    return stream(c, async (s) => {
+      await Promise.all(
+        IDP_URLS.map(async (url) => {
+          const start = Date.now();
+          consola.log(`--> GET ${url}`);
+          try {
+            const response = await fetch(url, {
+              signal: AbortSignal.timeout(HTTP_TIMEOUT),
+            });
+            consola.log(
+              `<-- GET ${url} ${colorStatus(response.status)} ${elapsed(start)}`,
+            );
+            await s.writeln(JSON.stringify({ status: response.status, url }));
+          } catch (e) {
+            consola.warn(`xxx GET ${url} ${elapsed(start)}`, e);
+            await s.writeln(
+              JSON.stringify({
+                status: 0,
+                url,
+                error: e instanceof Error ? e.message : String(e),
+              }),
+            );
+          }
+        }),
+      );
     });
   })
   .get(

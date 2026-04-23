@@ -72,27 +72,27 @@ describe("IDP Resilience: RabbitMQ failure graceful degradation", () => {
     async () => {
       const result = await env.execInService(
         "test_runner",
-        "curl -s -w '%{http_code}' http://producer/idp/internet",
+        "curl -s http://producer/idp/internet",
       );
-      const statusCode = result.output.match(/'(\d+)'/)?.[1];
-      expect(statusCode).toBe("200");
-
-      const jsonOutput = result.output.replace(/'200'/, "").trim();
-      const responseJson = JSON.parse(jsonOutput);
-      expect(responseJson).toMatchInlineSnapshot(`
-        {
-          "successfuls": [
-            {
-              "status": 200,
-              "url": "http://auth.macragge.ultramarines",
-            },
-            {
-              "status": 200,
-              "url": "http://auth.calth.ultramarines",
-            },
-          ],
-          "unsucessfuls": [],
-        }
+      const lines = result.output
+        .trim()
+        .split("\n")
+        .filter(Boolean)
+        .map((line: string) => JSON.parse(line))
+        .sort((a: { url: string }, b: { url: string }) =>
+          a.url.localeCompare(b.url),
+        );
+      expect(lines).toMatchInlineSnapshot(`
+        [
+          {
+            "status": 200,
+            "url": "http://auth.calth.ultramarines",
+          },
+          {
+            "status": 200,
+            "url": "http://auth.macragge.ultramarines",
+          },
+        ]
       `);
     },
   );
