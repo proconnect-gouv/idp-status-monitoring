@@ -19,7 +19,7 @@
         "amqplib": "1.0.3",
         "consola": "3.4.2",
         "uuid": "14.0.0",
-        "zod": "4.3.6",
+        "zod": "4.4.1",
       },
       "devDependencies": {
         "@types/amqplib": "0.10.8",
@@ -34,7 +34,7 @@
         "consola": "3.4.2",
         "hono": "4.12.15",
         "uuid": "14.0.0",
-        "zod": "4.3.6",
+        "zod": "4.4.1",
       },
       "devDependencies": {
         "@types/amqplib": "0.10.8",
@@ -80,6 +80,6 @@
 
     "uuid": ["uuid@14.0.0", "", { "bin": { "uuid": "dist-node/bin/uuid" } }, "sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg=="],
 
-    "zod": ["zod@4.3.6", "", {}, "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg=="],
+    "zod": ["zod@4.4.1", "", {}, "sha512-a6ENMBBGZBsnlSebQ/eKCguSBeGKSf4O7BPnqVPmYGtpBYI7VSqoVqw+QcB7kPRjbqPwhYTpFbVj/RqNz/CT0Q=="],
   }
 }
