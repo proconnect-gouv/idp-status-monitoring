@@ -8,7 +8,7 @@
   "dependencies": {
     "@hono/zod-validator": "0.7.6",
     "amqp-connection-manager": "5.0.0",
-    "amqplib": "1.0.3",
+    "amqplib": "1.0.7",
     "consola": "3.4.2",
     "hono": "4.12.16",
     "uuid": "14.0.0",

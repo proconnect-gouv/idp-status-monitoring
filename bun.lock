@@ -16,7 +16,7 @@
       "name": "idp-status-monitoring-consumer",
       "dependencies": {
         "amqp-connection-manager": "5.0.0",
-        "amqplib": "1.0.3",
+        "amqplib": "1.0.7",
         "consola": "3.4.2",
         "uuid": "14.0.0",
         "zod": "4.4.1",
@@ -30,7 +30,7 @@
       "dependencies": {
         "@hono/zod-validator": "0.7.6",
         "amqp-connection-manager": "5.0.0",
-        "amqplib": "1.0.3",
+        "amqplib": "1.0.7",
         "consola": "3.4.2",
         "hono": "4.12.16",
         "uuid": "14.0.0",
@@ -54,7 +54,7 @@
 
     "amqp-connection-manager": ["amqp-connection-manager@5.0.0", "", { "dependencies": { "promise-breaker": "^6.0.0" }, "peerDependencies": { "amqplib": "*" } }, "sha512-88yQzqa5RSBgnLl504XjvCQJ7d+osskdwvg35Lwm1LRbfLjNU9p7SQUMSP82BB7mseiq9tIUPJ3HE3eXQbpjEw=="],
 
-    "amqplib": ["amqplib@1.0.3", "", { "dependencies": { "buffer-more-ints": "~1.0.0" } }, "sha512-nsrXa59tvX4HPjPPW8JJGuBb/Db0MOq3DOhGdSbIY7bTsQDMV2fmF9c3i74g/8Gt9+QWyrxfEPppOOoV9lK1uQ=="],
+    "amqplib": ["amqplib@1.0.7", "", { "dependencies": { "buffer-more-ints": "~1.0.0" } }, "sha512-Z2hsSfPS0YuoRYsuVCkj/PRdh9gkdEWgyuVR0F2IVdhTwM/jdRX6aPpGnQ3vTXGhsUZO2uWVAF/+GfCazXYXIg=="],
 
     "buffer-more-ints": ["buffer-more-ints@1.0.0", "", {}, "sha512-EMetuGFz5SLsT0QTnXzINh4Ksr+oo4i+UGTXEshiGCQWnsgSs7ZhJ8fzlwQ+OzEMs0MpDAMr1hxnblp5a4vcHg=="],
 
