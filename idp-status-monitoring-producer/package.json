@@ -6,7 +6,7 @@
     "#src/*": "./src/*/index.ts"
   },
   "dependencies": {
-    "@hono/zod-validator": "0.7.6",
+    "@hono/zod-validator": "0.8.0",
     "amqp-connection-manager": "5.0.0",
     "amqplib": "2.0.1",
     "consola": "3.4.2",
