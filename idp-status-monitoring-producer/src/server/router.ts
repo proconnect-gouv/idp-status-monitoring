@@ -94,7 +94,7 @@ export const router = new Hono<ServerContext>()
     async ({ env, req, var: { channelWrapper } }) => {
       const { name } = req.valid("param");
 
-      const { QUEUE_CONSUMER_NAME, QUEUE_PRODUCER_NAME, HTTP_TIMEOUT } = env;
+      const { QUEUE_PRODUCER_NAME, HTTP_TIMEOUT } = env;
       const correlationId = uuid();
 
       const { promise, resolve } = Promise.withResolvers<Response>();
@@ -115,7 +115,7 @@ export const router = new Hono<ServerContext>()
       channelWrapper.sendToQueue(QUEUE_PRODUCER_NAME, name, {
         correlationId,
         expiration: HTTP_TIMEOUT,
-        replyTo: QUEUE_CONSUMER_NAME,
+        replyTo: "amq.rabbitmq.reply-to",
         persistent: false,
       });
 
