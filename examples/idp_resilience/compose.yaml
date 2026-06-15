@@ -45,7 +45,6 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.macragge.ultramarines","http://auth.calth.ultramarines"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
-      - QUEUE_CONSUMER_NAME=monitoring-consumer
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -75,7 +74,6 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
-      - QUEUE_CONSUMER_NAME=monitoring-consumer
       - MAP_FI_NAMES_TO_URL={"macragge":"http://auth.macragge.ultramarines","calth":"http://auth.calth.ultramarines"}
     depends_on:
       rabbitmq:

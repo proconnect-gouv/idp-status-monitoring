@@ -58,7 +58,6 @@ services:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.kraken.tyranids","http://auth.leviathan.tyranids","http://auth.behemoth.tyranids"]
       - QUEUE_PRODUCER_NAME=monitoring-producer
-      - QUEUE_CONSUMER_NAME=monitoring-consumer
       - HTTP_TIMEOUT=100
     depends_on:
       rabbitmq:
@@ -91,7 +90,6 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - QUEUE_PRODUCER_NAME=monitoring-producer
-      - QUEUE_CONSUMER_NAME=monitoring-consumer
       - MAP_FI_NAMES_TO_URL={"kraken":"http://auth.kraken.tyranids","leviathan":"http://auth.leviathan.tyranids","behemoth":"http://auth.behemoth.tyranids"}
       - HTTP_TIMEOUT=100
     depends_on:
