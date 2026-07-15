@@ -111,18 +111,27 @@ jobs:
             docker buildx imagetools inspect $(jq -r '.tags[0]' < "digests/$image/meta.json")
           done
 
+  list-examples:
+    runs-on: ubuntu-latest
+    name: 📋 List examples
+    outputs:
+      examples: ${{ steps.list.outputs.examples }}
+
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+
+      - name: 📋 List example directories
+        id: list
+        run: echo "examples=$(ls -d examples/*/ | xargs -n1 basename | jq -R . | jq -sc .)" >> "$GITHUB_OUTPUT"
+
   integration-tests:
     runs-on: ubuntu-latest
     name: 🔗 Integration Tests (${{ matrix.example }})
-    needs: build
+    needs: [build, list-examples]
     strategy:
       matrix:
-        example:
-          - idp_cascading_failures
-          - idp_error_handling
-          - idp_health_check_rpc
-          - idp_proxy_middleware
-          - idp_resilience
+        example: ${{ fromJSON(needs.list-examples.outputs.examples) }}
 
     steps:
       - name: 📥 Checkout
