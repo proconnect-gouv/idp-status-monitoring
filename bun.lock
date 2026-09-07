@@ -18,7 +18,7 @@
         "amqp-connection-manager": "5.0.0",
         "amqplib": "2.0.1",
         "consola": "3.4.2",
-        "uuid": "14.0.1",
+        "uuid": "14.0.2",
         "zod": "4.5.4",
       },
       "devDependencies": {
@@ -33,7 +33,7 @@
         "amqplib": "2.0.1",
         "consola": "3.4.2",
         "hono": "4.13.5",
-        "uuid": "14.0.1",
+        "uuid": "14.0.2",
         "zod": "4.5.4",
       },
       "devDependencies": {
@@ -116,7 +116,7 @@
 
     "undici-types": ["undici-types@7.18.2", "", {}, "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="],
 
-    "uuid": ["uuid@14.0.1", "", { "bin": { "uuid": "dist-node/bin/uuid" } }, "sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew=="],
+    "uuid": ["uuid@14.0.2", "", { "bin": { "uuid": "dist-node/bin/uuid" } }, "sha512-xZe/16rV4aa+HGSOCiY2YeLT1OybRLrrkL/Rqaq7p7GMVXjFh+6wN4oMYgjFmnSnhY8t6Xpdl2l9qmnHYuMHwQ=="],
 
     "zod": ["zod@4.5.4", "", {}, "sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA=="],
   }

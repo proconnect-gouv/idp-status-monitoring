@@ -11,7 +11,7 @@
     "amqplib": "2.0.1",
     "consola": "3.4.2",
     "hono": "4.13.5",
-    "uuid": "14.0.1",
+    "uuid": "14.0.2",
     "zod": "4.5.4"
   },
   "devDependencies": {
