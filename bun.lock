@@ -32,7 +32,7 @@
         "amqp-connection-manager": "5.0.0",
         "amqplib": "2.0.1",
         "consola": "3.4.2",
-        "hono": "4.13.7",
+        "hono": "4.13.8",
         "uuid": "14.0.2",
         "zod": "4.5.4",
       },
@@ -100,7 +100,7 @@
 
     "consola": ["consola@3.4.2", "", {}, "sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA=="],
 
-    "hono": ["hono@4.13.7", "", {}, "sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ=="],
+    "hono": ["hono@4.13.8", "", {}, "sha512-/Gng7NfoykZl2pjukW5Z6+8Yxm3BPRf86GTbQnt0SbySkvax4fyL4H3HhY1cCpBGmiW9XDRFzRV+CXK2W8QudQ=="],
 
     "idp-status-monitoring-consumer": ["idp-status-monitoring-consumer@workspace:idp-status-monitoring-consumer"],
 
