@@ -16,7 +16,7 @@
       "name": "idp-status-monitoring-consumer",
       "dependencies": {
         "amqp-connection-manager": "5.0.0",
-        "amqplib": "2.0.1",
+        "amqplib": "2.2.0",
         "consola": "3.4.2",
         "uuid": "14.0.2",
         "zod": "4.6.5",
@@ -30,7 +30,7 @@
       "dependencies": {
         "@hono/zod-validator": "0.9.1",
         "amqp-connection-manager": "5.0.0",
-        "amqplib": "2.0.1",
+        "amqplib": "2.2.0",
         "consola": "3.4.2",
         "hono": "4.13.8",
         "uuid": "14.0.2",
@@ -94,7 +94,7 @@
 
     "amqp-connection-manager": ["amqp-connection-manager@5.0.0", "", { "dependencies": { "promise-breaker": "^6.0.0" }, "peerDependencies": { "amqplib": "*" } }, "sha512-88yQzqa5RSBgnLl504XjvCQJ7d+osskdwvg35Lwm1LRbfLjNU9p7SQUMSP82BB7mseiq9tIUPJ3HE3eXQbpjEw=="],
 
-    "amqplib": ["amqplib@2.0.1", "", {}, "sha512-a3P2MgfCf9nzVis12VxWEn0dS6hcqve7dlEAhXDtIWR27BlhtMkILOc+H9aeHjDi6i6r94dYKc2Kx2OFe3avvg=="],
+    "amqplib": ["amqplib@2.2.0", "", {}, "sha512-VifzN9aHs/Q3zTruVHXh2yCisQyXexBN91CQ2E5iSyUKyNjH6ilYhJGte5AXZH/Bj1PaH7SwPhyuSf6Msd2udw=="],
 
     "bun-types": ["bun-types@1.4.2", "", { "dependencies": { "@types/node": "*" } }, "sha512-bxV1FgK7yBIzjRe5zBozIM4Bem11ZJcCXSrjWRG3YWLt8yFDePu4cLjpebO8OvPeIE9trbyPF4fuj3Cia4Fj3w=="],
 
