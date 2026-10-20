@@ -44,6 +44,7 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.fenris.space-wolves","http://auth.asaheim.space-wolves"]
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
     depends_on:
       rabbitmq:
@@ -74,6 +75,7 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.fenris.space-wolves","http://auth.asaheim.space-wolves"]
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
     depends_on:
       rabbitmq:
@@ -103,6 +105,7 @@ services:
       target: consumer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - MAP_FI_NAMES_TO_URL={"fenris":"http://auth.fenris.space-wolves","asaheim":"http://auth.asaheim.space-wolves"}
     depends_on:

@@ -1,27 +1,27 @@
 //
 
 import { type Config } from "#src/config";
+import { log } from "#src/log";
 import amqp, {
   type AmqpConnectionManager,
   type Channel,
 } from "amqp-connection-manager";
-import consola from "consola";
 
 export async function createAmqpConnection(amqpUrl: string) {
-  consola.info("Connecting to RabbitMQ...");
+  log("info", { event: "amqp.connecting" });
 
   const connection = await amqp.connect([amqpUrl]);
 
   connection.on("connect", function () {
-    consola.info("Connected to RabbitMQ");
+    log("info", { event: "amqp.connected" });
   });
 
-  connection.on("connectFailed", function (err) {
-    consola.error("Failed to connect to RabbitMQ", err);
+  connection.on("connectFailed", function ({ err }) {
+    log("error", { error: err, event: "amqp.connect_failed" });
   });
 
-  connection.on("disconnect", function (err) {
-    consola.warn("Disconnected from RabbitMQ", err);
+  connection.on("disconnect", function ({ err }) {
+    log("warn", { error: err, event: "amqp.disconnected" });
   });
 
   return connection;
@@ -35,7 +35,7 @@ export function setupRpcProducer(
 
   const channel_wrapper = connection.createChannel({
     setup: (channel: Channel) => {
-      consola.info(`Asserting queue "${QUEUE_PRODUCER_NAME}"`);
+      log("info", { event: "amqp.queue_asserted", queue: QUEUE_PRODUCER_NAME });
       return channel.assertQueue(QUEUE_PRODUCER_NAME, { durable: true });
     },
   });
@@ -45,20 +45,28 @@ export function setupRpcProducer(
     "amq.rabbitmq.reply-to",
     (message) => {
       if (!message?.content || !message?.properties) {
-        consola.error(
-          "Malformed message received: missing content or properties",
-        );
+        log("error", {
+          event: "rpc.malformed",
+          reason: "missing_content_or_properties",
+        });
         return;
       }
 
       const { correlationId } = message.properties;
       if (!correlationId) {
-        consola.error("Message missing required correlationId property");
+        log("error", {
+          event: "rpc.malformed",
+          reason: "missing_correlation_id",
+        });
         return;
       }
 
       const content = message.content.toString("utf8");
-      consola.debug(`Received message: ${correlationId} - ${content}`);
+      log("debug", {
+        content,
+        correlation_id: correlationId,
+        event: "rpc.reply_received",
+      });
       channel_wrapper.emit(correlationId, content);
     },
     { noAck: true },

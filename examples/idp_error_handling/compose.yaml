@@ -57,6 +57,7 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.fenris.spacewolves","http://auth.prospero.thousandsons","http://auth.sorcerers.thousandsons"]
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
     depends_on:
       rabbitmq:
@@ -88,6 +89,7 @@ services:
       target: consumer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - MAP_FI_NAMES_TO_URL={"fenris":"http://auth.fenris.spacewolves","prospero":"http://auth.prospero.thousandsons","sorcerers":"http://auth.sorcerers.thousandsons"}
     depends_on:

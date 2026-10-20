@@ -18,6 +18,8 @@ QUEUE_CONSUMER_NAME=monitoring-consumer
 PORT=3000
 ```
 
+`LOG_LEVEL`: `debug`, `info` (default), `warn` or `error`. Logs are one JSON line per event, with a `level` field Grafana Loki reads as `detected_level`.
+
 ## Usage
 
 ```bash

@@ -44,6 +44,7 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.macragge.ultramarines","http://auth.calth.ultramarines"]
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
     depends_on:
       rabbitmq:
@@ -73,6 +74,7 @@ services:
       target: consumer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - MAP_FI_NAMES_TO_URL={"macragge":"http://auth.macragge.ultramarines","calth":"http://auth.calth.ultramarines"}
     depends_on:
