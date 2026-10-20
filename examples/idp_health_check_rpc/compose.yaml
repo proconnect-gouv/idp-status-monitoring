@@ -43,6 +43,7 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.rock.darkangels","http://auth.caliban.darkangels"]
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
     depends_on:
       rabbitmq:
@@ -72,6 +73,7 @@ services:
       target: consumer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - MAP_FI_NAMES_TO_URL={"rock":"http://auth.rock.darkangels","caliban":"http://auth.caliban.darkangels","inner-circle":"http://auth.rock.darkangels","fallen-angels":"http://auth.caliban.darkangels"}
     depends_on:

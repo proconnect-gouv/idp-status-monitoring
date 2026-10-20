@@ -17,7 +17,6 @@
       "dependencies": {
         "amqp-connection-manager": "5.0.0",
         "amqplib": "2.2.0",
-        "consola": "3.4.2",
         "uuid": "14.0.3",
         "zod": "4.6.7",
       },
@@ -31,7 +30,6 @@
         "@hono/zod-validator": "0.9.1",
         "amqp-connection-manager": "5.0.0",
         "amqplib": "2.2.0",
-        "consola": "3.4.2",
         "hono": "4.13.13",
         "uuid": "14.0.3",
         "zod": "4.6.7",
@@ -97,8 +95,6 @@
     "amqplib": ["amqplib@2.2.0", "", {}, "sha512-VifzN9aHs/Q3zTruVHXh2yCisQyXexBN91CQ2E5iSyUKyNjH6ilYhJGte5AXZH/Bj1PaH7SwPhyuSf6Msd2udw=="],
 
     "bun-types": ["bun-types@1.4.3", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg=="],
-
-    "consola": ["consola@3.4.2", "", {}, "sha512-5IKcdX0nnYavi6G7TtOhwkYzyjfJlatbjMjuLSfE2kYT5pMDOilZ4OvMhi637CcDICTmz3wARPoyhqyX1Y+XvA=="],
 
     "hono": ["hono@4.13.13", "", {}, "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA=="],
 

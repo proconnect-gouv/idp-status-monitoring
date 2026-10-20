@@ -1,41 +1,22 @@
 //
 
+import { log } from "#src/log";
 import type { MaybePromise } from "bun";
-import consola from "consola";
 import type { ServerContext } from "./context";
 
 type BunCallback = (req: Bun.BunRequest) => MaybePromise<Response>;
 
-const elapsed = (start: number) => {
-  const delta = Date.now() - start;
-  return delta < 1000 ? `${delta}ms` : `${Math.round(delta / 1000)}s`;
-};
-
-const colorStatus = (status: number) => {
-  if (!process.stdout.isTTY) return `${status}`;
-  switch ((status / 100) | 0) {
-    case 5:
-      return `\x1b[31m${status}\x1b[0m`;
-    case 4:
-      return `\x1b[33m${status}\x1b[0m`;
-    case 3:
-      return `\x1b[36m${status}\x1b[0m`;
-    case 2:
-      return `\x1b[32m${status}\x1b[0m`;
-    default:
-      return `${status}`;
-  }
-};
-
 const handler = (cb: BunCallback): BunCallback => {
   return async (req: Bun.BunRequest) => {
-    const { pathname } = new URL(req.url);
-    const start = Date.now();
-    consola.log(`--> ${req.method} ${pathname}`);
+    const start = performance.now();
     const res = await cb(req);
-    consola.log(
-      `<-- ${req.method} ${pathname} ${colorStatus(res.status)} ${elapsed(start)}`,
-    );
+    log("info", {
+      duration_ms: Math.round(performance.now() - start),
+      event: "http.request",
+      method: req.method,
+      path: new URL(req.url).pathname,
+      status: res.status,
+    });
     return res;
   };
 };
@@ -80,7 +61,7 @@ export function createRoutes(context: ServerContext) {
           });
           return { name, url, status: response.status };
         } catch (e) {
-          consola.warn(`xxx GET ${url}`, e);
+          log("warn", { error: e, event: "idp.unreachable", idp: name, url });
           return {
             name,
             url,

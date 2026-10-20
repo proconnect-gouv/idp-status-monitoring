@@ -1,7 +1,7 @@
 //
 
+import { log } from "#src/log";
 import { zValidator } from "@hono/zod-validator";
-import consola from "consola";
 import { Hono } from "hono";
 import { stream } from "hono/streaming";
 import type { StatusCode } from "hono/utils/http-status";
@@ -10,27 +10,6 @@ import z from "zod";
 import type { ServerContext } from "./context";
 
 //
-
-const elapsed = (start: number) => {
-  const delta = Date.now() - start;
-  return delta < 1000 ? `${delta}ms` : `${Math.round(delta / 1000)}s`;
-};
-
-const colorStatus = (status: number) => {
-  if (!process.stdout.isTTY) return `${status}`;
-  switch ((status / 100) | 0) {
-    case 5:
-      return `\x1b[31m${status}\x1b[0m`;
-    case 4:
-      return `\x1b[33m${status}\x1b[0m`;
-    case 3:
-      return `\x1b[36m${status}\x1b[0m`;
-    case 2:
-      return `\x1b[32m${status}\x1b[0m`;
-    default:
-      return `${status}`;
-  }
-};
 
 const ParamsSchema = z.object({
   name: z.string().min(1),
@@ -64,18 +43,25 @@ export const router = new Hono<ServerContext>()
     return stream(c, async (s) => {
       await Promise.all(
         IDP_URLS.map(async (url) => {
-          const start = Date.now();
-          consola.log(`--> GET ${url}`);
+          const start = performance.now();
           try {
             const response = await fetch(url, {
               signal: AbortSignal.timeout(HTTP_TIMEOUT),
             });
-            consola.log(
-              `<-- GET ${url} ${colorStatus(response.status)} ${elapsed(start)}`,
-            );
+            log("info", {
+              duration_ms: Math.round(performance.now() - start),
+              event: "idp.checked",
+              status: response.status,
+              url,
+            });
             await s.writeln(JSON.stringify({ status: response.status, url }));
           } catch (e) {
-            consola.warn(`xxx GET ${url} ${elapsed(start)}`, e);
+            log("warn", {
+              duration_ms: Math.round(performance.now() - start),
+              error: e,
+              event: "idp.unreachable",
+              url,
+            });
             await s.writeln(
               JSON.stringify({
                 status: 0,

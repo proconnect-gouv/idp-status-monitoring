@@ -14,21 +14,25 @@ describe("IDP Multi-Producer Isolation: Direct Reply-to prevents reply stealing"
 
   test.serial("📨 Consumer: Loaded Space Wolves configuration", async () => {
     const consumerLogs = await env.getServiceLogs("consumer");
-    expect(consumerLogs).toContain("Consumer started successfully!");
+    expect(consumerLogs).toContain('"event":"consumer.started"');
     expect(consumerLogs).toContain("fenris");
     expect(consumerLogs).toContain("asaheim");
   });
 
   test.serial("🐺 Producer Alpha: Connected to RabbitMQ", async () => {
     const logs = await env.getServiceLogs("producer_alpha");
-    expect(logs).toContain("Connected to RabbitMQ");
-    expect(logs).toContain('Asserting queue "monitoring-producer"');
+    expect(logs).toContain('"event":"amqp.connected"');
+    expect(logs).toContain(
+      '"event":"amqp.queue_asserted","queue":"monitoring-producer"',
+    );
   });
 
   test.serial("🐺 Producer Bravo: Connected to RabbitMQ", async () => {
     const logs = await env.getServiceLogs("producer_bravo");
-    expect(logs).toContain("Connected to RabbitMQ");
-    expect(logs).toContain('Asserting queue "monitoring-producer"');
+    expect(logs).toContain('"event":"amqp.connected"');
+    expect(logs).toContain(
+      '"event":"amqp.queue_asserted","queue":"monitoring-producer"',
+    );
   });
 
   test.serial(

@@ -78,6 +78,7 @@ services:
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
       - IDP_URLS=["http://auth.olympia.ironwarriors","http://auth.medrengard.ironwarriors"]
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
     depends_on:
       rabbitmq:
@@ -107,6 +108,7 @@ services:
       target: consumer
     environment:
       - AMQP_URL=amqp://guest:guest@rabbitmq:5672
+      - LOG_LEVEL=debug
       - QUEUE_PRODUCER_NAME=monitoring-producer
       - MAP_FI_NAMES_TO_URL={"olympia":"http://auth.phalanx.imperialfists","medrengard":"http://auth.inwit.imperialfists"}
     depends_on:

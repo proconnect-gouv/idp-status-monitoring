@@ -14,7 +14,7 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
 
   test.serial("📨 Consumer: Loaded all Hive Fleet configuration", async () => {
     const consumerLogs = await env.getServiceLogs("consumer");
-    expect(consumerLogs).toContain("Consumer started successfully!");
+    expect(consumerLogs).toContain('"event":"consumer.started"');
     expect(consumerLogs).toContain("kraken");
     expect(consumerLogs).toContain("leviathan");
     expect(consumerLogs).toContain("behemoth");
@@ -22,8 +22,10 @@ describe("IDP Cascading Failures: Tyranid Hive Fleet resilience testing", () => 
 
   test.serial("📨 Producer: Connected to RabbitMQ", async () => {
     const producerLogs = await env.getServiceLogs("producer");
-    expect(producerLogs).toContain("Connected to RabbitMQ");
-    expect(producerLogs).toContain('Asserting queue "monitoring-producer"');
+    expect(producerLogs).toContain('"event":"amqp.connected"');
+    expect(producerLogs).toContain(
+      '"event":"amqp.queue_asserted","queue":"monitoring-producer"',
+    );
   });
 
   test.serial(

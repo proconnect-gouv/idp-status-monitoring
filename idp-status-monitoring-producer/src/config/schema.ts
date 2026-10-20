@@ -1,5 +1,6 @@
 //
 
+import { log_levels } from "#src/log";
 import { z } from "zod";
 
 const parseJsonArray = z
@@ -30,7 +31,7 @@ export const ConfigSchema = z.object({
   AMQP_URL: z.url().default("amqp://guest:guest@rabbitmq:5672"),
   HTTP_TIMEOUT: z.coerce.number().default(5_000),
   IDP_URLS: parseJsonArray,
-  LOG_LEVEL: z.coerce.number().default(3),
+  LOG_LEVEL: z.enum(log_levels).default("info"),
   PORT: z.coerce.number().default(80),
   QUEUE_PRODUCER_NAME: z.string().default("monitoring-producer"),
 });
