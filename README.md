@@ -33,3 +33,21 @@ docker run monitoring
 # Or explicitly run producer
 docker run monitoring producer
 ```
+
+## Release
+
+Versions follow monthly calendar versioning (`YYYY.MM.PATCH`), released through
+[`proconnect-gouv/release-action`](https://github.com/proconnect-gouv/release-action)
+(workflow **🚢 Release It !**, on every push to `main`):
+
+1. After each merge to `main`, the action opens or updates the
+   `🔖 release <version>` pull request from `release-it/next`, bumping
+   `package.json` and prepending the version section to `CHANGELOG.md`.
+2. Merging that pull request tags the version (no `v` prefix) and publishes a
+   GitHub release with the `CHANGELOG.md` section as notes.
+3. The publish job then dispatches **🐳 Docker Build** on the tag:
+   `ghcr.io/proconnect-gouv/idp-status-monitoring/{consumer,producer}:<version>`.
+
+Describe a user-facing change with a Markdown file in `.release-it-changeset/`
+(see the
+[action documentation](https://github.com/proconnect-gouv/release-action#%EF%B8%8F-changesets)).

@@ -1,5 +1,6 @@
 {
   "name": "idp-status-monitoring",
+  "version": "2026.10.0",
   "private": true,
   "workspaces": [
     "idp-status-monitoring-consumer",
@@ -15,6 +16,19 @@
     "plugins": [
       "prettier-plugin-organize-imports"
     ]
+  },
+  "release-it": {
+    "github": {
+      "release": true
+    },
+    "npm": {
+      "publish": false
+    },
+    "plugins": {
+      "@csmith/release-it-calver-plugin": {
+        "cycle": "month"
+      }
+    }
   },
   "devDependencies": {
     "@tsconfig/bun": "1.0.11",
