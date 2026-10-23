@@ -6,7 +6,7 @@
     "#src/*": "./src/*/index.ts"
   },
   "dependencies": {
-    "amqp-connection-manager": "5.0.0",
+    "amqp-connection-manager": "5.0.1",
     "amqplib": "2.2.0",
     "uuid": "14.0.3",
     "zod": "4.6.7"
