@@ -30,7 +30,7 @@
         "@hono/zod-validator": "0.9.1",
         "amqp-connection-manager": "5.0.0",
         "amqplib": "2.2.0",
-        "hono": "4.13.13",
+        "hono": "4.13.14",
         "uuid": "14.0.3",
         "zod": "4.6.7",
       },
@@ -96,7 +96,7 @@
 
     "bun-types": ["bun-types@1.4.3", "", { "dependencies": { "@types/node": "*", "undici-types": "*" } }, "sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg=="],
 
-    "hono": ["hono@4.13.13", "", {}, "sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA=="],
+    "hono": ["hono@4.13.14", "", {}, "sha512-yhRLQ21U6qa9Hsu2N7Qcbh8tE+WKEcoErjIo56LeSGiGXGp9sA7UpE86Ui9uexb61KakiGwuHMn2QdV7w6i6kQ=="],
 
     "idp-status-monitoring-consumer": ["idp-status-monitoring-consumer@workspace:idp-status-monitoring-consumer"],
 
