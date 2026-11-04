@@ -57,6 +57,26 @@ describe("IDP Health Check RPC: End-to-end distributed health monitoring", () =>
     expect(result.output).toBe("'404'");
   });
 
+  test.serial("🩺 GET /idp/rock/readyz - Diagnose The Rock", async () => {
+    const result = await env.execInService(
+      "test_runner",
+      "curl -s -w \\n%{http_code} http://producer/idp/rock/readyz",
+    );
+    expect(result.output).toMatch(
+      /^\[\+\]rpc ok\n\[\+\]dns ok\n\[\+\]connect ok\n\[\+\]http ok: 200\n\[\+\]response ok: application\/json, \d+B\n\[\+\]json ok\n\[\+\]response-time ok: \d+ms\nreadyz check passed\n\n200$/,
+    );
+  });
+
+  test.serial("❌ GET /idp/unknown/readyz - Diagnose unknown IDP", async () => {
+    const result = await env.execInService(
+      "test_runner",
+      "curl -s -w \\n%{http_code} http://producer/idp/unknown/readyz",
+    );
+    expect(result.output).toBe(
+      "[+]rpc ok\n[-]idp failed: unknown\nreadyz check failed\n\n404",
+    );
+  });
+
   test.serial("📊 GET /idp/internet - Streamed health check", async () => {
     const result = await env.execInService(
       "test_runner",

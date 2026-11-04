@@ -6,6 +6,16 @@ HTTP server exposing IDP health endpoints.
 
 - `GET /` - Health check
 - `GET /idp/:name` - Query specific IDP via RPC
+- `GET /idp/:name/readyz` - Diagnose one IDP via RPC, one `[+]`/`[-]` line per check in Kubernetes `readyz` style; 200 when all pass, 503 on failure, 404 for an unknown IDP:
+
+  ```
+  [+]rpc ok
+  [+]dns ok
+  [+]connect ok
+  [-]tls failed: CERT_HAS_EXPIRED
+  readyz check failed
+  ```
+
 - `GET /idp/internet` - Aggregated health of all configured IDPs
 
 ## Configuration

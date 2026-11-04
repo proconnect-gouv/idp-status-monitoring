@@ -15,6 +15,52 @@ const ParamsSchema = z.object({
   name: z.string().min(1),
 });
 
+const READYZ_GRACE_MS = 1_000;
+
+const ReadyzReplySchema = z.object({
+  checks: z.array(
+    z.discriminatedUnion("ok", [
+      z.object({ detail: z.string(), name: z.string(), ok: z.literal(false) }),
+      z.object({
+        detail: z.string().optional(),
+        name: z.string(),
+        ok: z.literal(true),
+      }),
+    ]),
+  ),
+  status: z.union([z.literal(200), z.literal(404), z.literal(503)]),
+});
+type ReadyzReply = z.infer<typeof ReadyzReplySchema>;
+
+const rpc_failed = (detail: string): ReadyzReply => ({
+  checks: [{ detail, name: "rpc", ok: false }],
+  status: 503,
+});
+
+const parse_readyz_reply = (reply: string): ReadyzReply => {
+  let json: unknown;
+  try {
+    json = JSON.parse(reply);
+  } catch {
+    return rpc_failed("invalid reply");
+  }
+  const parsed = ReadyzReplySchema.safeParse(json);
+  if (!parsed.success) return rpc_failed("consumer lacks readyz");
+  const { checks, status } = parsed.data;
+  return { checks: [{ name: "rpc", ok: true }, ...checks], status };
+};
+
+const render_readyz = ({ checks }: ReadyzReply) =>
+  [
+    ...checks.map((check) =>
+      check.ok
+        ? `[+]${check.name} ok${check.detail ? `: ${check.detail}` : ""}`
+        : `[-]${check.name} failed: ${check.detail}`,
+    ),
+    `readyz check ${checks.every(({ ok }) => ok) ? "passed" : "failed"}`,
+    "",
+  ].join("\n");
+
 export const router = new Hono<ServerContext>()
   .get("/", ({ text }) => {
     return text("ok");
@@ -108,5 +154,39 @@ export const router = new Hono<ServerContext>()
       const response = await promise;
       clearTimeout(timeoutId);
       return response;
+    },
+  )
+  .get(
+    "/idp/:name/readyz",
+    zValidator("param", ParamsSchema),
+    async ({ env, req, text, var: { channelWrapper } }) => {
+      const { name } = req.valid("param");
+
+      const { QUEUE_PRODUCER_NAME, HTTP_TIMEOUT } = env;
+      const timeout_ms = HTTP_TIMEOUT + READYZ_GRACE_MS;
+      const correlationId = uuid();
+
+      const { promise, resolve } = Promise.withResolvers<ReadyzReply>();
+
+      channelWrapper.once(correlationId, (reply: string) => {
+        resolve(parse_readyz_reply(reply));
+      });
+
+      const timeoutId = setTimeout(() => {
+        resolve(rpc_failed(`no reply after ${timeout_ms}ms`));
+      }, timeout_ms);
+
+      channelWrapper.sendToQueue(QUEUE_PRODUCER_NAME, name, {
+        correlationId,
+        expiration: timeout_ms,
+        persistent: false,
+        replyTo: "amq.rabbitmq.reply-to",
+        type: "readyz",
+      });
+
+      const reply = await promise;
+      clearTimeout(timeoutId);
+      channelWrapper.removeAllListeners(correlationId);
+      return text(render_readyz(reply), reply.status);
     },
   );
