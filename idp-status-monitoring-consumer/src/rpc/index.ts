@@ -2,6 +2,7 @@
 
 import { type Config } from "#src/config";
 import { log } from "#src/log";
+import { diagnose_idp } from "#src/readyz";
 import amqp, {
   type AmqpConnectionManager,
   type Channel,
@@ -105,7 +106,7 @@ export function setupMessageConsumer(
         return;
       }
 
-      const { correlationId, replyTo } = message.properties;
+      const { correlationId, replyTo, type } = message.properties;
       if (!correlationId || !replyTo) {
         log("error", {
           event: "rpc.malformed",
@@ -122,13 +123,16 @@ export function setupMessageConsumer(
         idp,
       });
 
-      const status = await checkIdpStatus(idp, config);
+      const reply =
+        type === "readyz"
+          ? await diagnose_idp(idp, config)
+          : { status: await checkIdpStatus(idp, config) };
 
       log("debug", {
         correlation_id: correlationId,
         event: "rpc.replied",
         idp,
-        status,
+        status: reply.status,
       });
 
       const options = {
@@ -137,7 +141,7 @@ export function setupMessageConsumer(
         expiration: HTTP_TIMEOUT,
       };
 
-      channel_wrapper.sendToQueue(replyTo, JSON.stringify({ status }), options);
+      channel_wrapper.sendToQueue(replyTo, JSON.stringify(reply), options);
       channel_wrapper.ack(message);
     } catch (error) {
       log("error", { error, event: "rpc.failed" });

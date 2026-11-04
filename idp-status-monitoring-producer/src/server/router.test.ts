@@ -1,4 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it, spyOn } from "bun:test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+  spyOn,
+} from "bun:test";
+import type { ChannelWrapper } from "amqp-connection-manager";
+import { EventEmitter } from "node:events";
 import { Hono } from "hono";
 import type { ServerContext } from "./context";
 import { router } from "./router";
@@ -185,5 +195,108 @@ describe("GET /idp/internet - NDJSON streaming", () => {
 
     expect(res.status).toBe(200);
     await expect(parseNDJSON(res)).resolves.toMatchInlineSnapshot(`[]`);
+  });
+});
+
+const makeReadyzApp = (reply?: string) => {
+  const { promise: sent, resolve } = Promise.withResolvers<{
+    name: string;
+    options: { correlationId: string; type: string };
+  }>();
+  const channel = Object.assign(new EventEmitter(), {
+    sendToQueue: (
+      _queue: string,
+      name: string,
+      options: { correlationId: string; type: string },
+    ) => {
+      resolve({ name, options });
+      if (reply !== undefined) channel.emit(options.correlationId, reply);
+    },
+  });
+  const app = new Hono<ServerContext>()
+    .use((c, next) => {
+      c.set("channelWrapper", channel as unknown as ChannelWrapper);
+      return next();
+    })
+    .route("", router);
+  const response = app.fetch(new Request("http://localhost/idp/rock/readyz"), {
+    HTTP_TIMEOUT: 5_000,
+    QUEUE_PRODUCER_NAME: "monitoring-producer",
+  });
+  return { channel, response: Promise.resolve(response), sent };
+};
+
+describe("GET /idp/:name/readyz", () => {
+  it("renders consumer checks as k8s readyz text", async () => {
+    const { response, sent } = makeReadyzApp(
+      JSON.stringify({
+        checks: [
+          { name: "dns", ok: true },
+          { detail: "200", name: "http", ok: true },
+        ],
+        status: 200,
+      }),
+    );
+
+    const res = await response;
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toStartWith("text/plain");
+    expect(await res.text()).toBe(
+      "[+]rpc ok\n[+]dns ok\n[+]http ok: 200\nreadyz check passed\n",
+    );
+    expect(await sent).toMatchObject({
+      name: "rock",
+      options: { type: "readyz" },
+    });
+  });
+
+  it("passes the consumer status through on failure", async () => {
+    const { response } = makeReadyzApp(
+      JSON.stringify({
+        checks: [{ detail: "unknown", name: "idp", ok: false }],
+        status: 404,
+      }),
+    );
+
+    const res = await response;
+    expect(res.status).toBe(404);
+    expect(await res.text()).toBe(
+      "[+]rpc ok\n[-]idp failed: unknown\nreadyz check failed\n",
+    );
+  });
+
+  it("fails rpc when an older consumer replies without checks", async () => {
+    const { response } = makeReadyzApp(JSON.stringify({ status: 200 }));
+
+    const res = await response;
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe(
+      "[-]rpc failed: consumer lacks readyz\nreadyz check failed\n",
+    );
+  });
+
+  it("fails rpc when the reply is not JSON", async () => {
+    const { response } = makeReadyzApp("nope");
+
+    const res = await response;
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe(
+      "[-]rpc failed: invalid reply\nreadyz check failed\n",
+    );
+  });
+
+  it("fails rpc after HTTP_TIMEOUT plus one second without reply", async () => {
+    jest.useFakeTimers();
+    const { channel, response, sent } = makeReadyzApp();
+    const { options } = await sent;
+    jest.advanceTimersByTime(6_000);
+    jest.useRealTimers();
+
+    const res = await response;
+    expect(res.status).toBe(503);
+    expect(await res.text()).toBe(
+      "[-]rpc failed: no reply after 6000ms\nreadyz check failed\n",
+    );
+    expect(channel.listenerCount(options.correlationId)).toBe(0);
   });
 });
