@@ -1,6 +1,6 @@
 {
   "name": "idp-status-monitoring",
-  "version": "2026.10.1",
+  "version": "2026.11.0",
   "private": true,
   "workspaces": [
     "idp-status-monitoring-consumer",
