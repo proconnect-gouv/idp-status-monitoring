@@ -12,7 +12,7 @@ import type { ServerContext } from "../server/context";
 const config = await ConfigSchema.parseAsync(process.env);
 set_log_level(config.LOG_LEVEL);
 const connection = await createAmqpConnection(config.AMQP_URL);
-const channelWrapper = setupRpcProducer(connection, config);
+const { channel_wrapper, replies } = setupRpcProducer(connection, config);
 
 //
 
@@ -30,8 +30,9 @@ const app = new Hono<ServerContext>()
   })
   .use((context, next) => {
     Object.assign(context.env, config);
-    context.set("channelWrapper", channelWrapper);
+    context.set("channelWrapper", channel_wrapper);
     context.set("connection", connection);
+    context.set("replies", replies);
     return next();
   })
   .route("", router);

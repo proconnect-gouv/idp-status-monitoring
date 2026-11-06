@@ -123,7 +123,7 @@ export const router = new Hono<ServerContext>()
   .get(
     "/idp/:name",
     zValidator("param", ParamsSchema),
-    async ({ env, req, var: { channelWrapper } }) => {
+    async ({ env, req, var: { channelWrapper, replies } }) => {
       const { name } = req.valid("param");
 
       const { QUEUE_PRODUCER_NAME, HTTP_TIMEOUT } = env;
@@ -131,7 +131,7 @@ export const router = new Hono<ServerContext>()
 
       const { promise, resolve } = Promise.withResolvers<Response>();
 
-      channelWrapper.once(correlationId, (reply) => {
+      replies.once(correlationId, (reply: string) => {
         try {
           const response = JSON.parse(reply) as { status: StatusCode };
           resolve(new Response(null, { status: response.status || 500 }));
@@ -159,7 +159,7 @@ export const router = new Hono<ServerContext>()
   .get(
     "/idp/:name/readyz",
     zValidator("param", ParamsSchema),
-    async ({ env, req, text, var: { channelWrapper } }) => {
+    async ({ env, req, text, var: { channelWrapper, replies } }) => {
       const { name } = req.valid("param");
 
       const { QUEUE_PRODUCER_NAME, HTTP_TIMEOUT } = env;
@@ -168,7 +168,7 @@ export const router = new Hono<ServerContext>()
 
       const { promise, resolve } = Promise.withResolvers<ReadyzReply>();
 
-      channelWrapper.once(correlationId, (reply: string) => {
+      replies.once(correlationId, (reply: string) => {
         resolve(parse_readyz_reply(reply));
       });
 
@@ -186,7 +186,7 @@ export const router = new Hono<ServerContext>()
 
       const reply = await promise;
       clearTimeout(timeoutId);
-      channelWrapper.removeAllListeners(correlationId);
+      replies.removeAllListeners(correlationId);
       return text(render_readyz(reply), reply.status);
     },
   );

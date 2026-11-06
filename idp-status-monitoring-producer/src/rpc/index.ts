@@ -6,6 +6,7 @@ import amqp, {
   type AmqpConnectionManager,
   type Channel,
 } from "amqp-connection-manager";
+import { EventEmitter } from "node:events";
 
 export async function createAmqpConnection(amqpUrl: string) {
   log("info", { event: "amqp.connecting" });
@@ -40,7 +41,8 @@ export function setupRpcProducer(
     },
   });
 
-  channel_wrapper.setMaxListeners(0);
+  const replies = new EventEmitter();
+  replies.setMaxListeners(0);
   channel_wrapper.consume(
     "amq.rabbitmq.reply-to",
     (message) => {
@@ -67,10 +69,10 @@ export function setupRpcProducer(
         correlation_id: correlationId,
         event: "rpc.reply_received",
       });
-      channel_wrapper.emit(correlationId, content);
+      replies.emit(correlationId, content);
     },
     { noAck: true },
   );
 
-  return channel_wrapper;
+  return { channel_wrapper, replies };
 }

@@ -203,19 +203,21 @@ const makeReadyzApp = (reply?: string) => {
     name: string;
     options: { correlationId: string; type: string };
   }>();
-  const channel = Object.assign(new EventEmitter(), {
+  const replies = new EventEmitter();
+  const channel = {
     sendToQueue: (
       _queue: string,
       name: string,
       options: { correlationId: string; type: string },
     ) => {
       resolve({ name, options });
-      if (reply !== undefined) channel.emit(options.correlationId, reply);
+      if (reply !== undefined) replies.emit(options.correlationId, reply);
     },
-  });
+  };
   const app = new Hono<ServerContext>()
     .use((c, next) => {
       c.set("channelWrapper", channel as unknown as ChannelWrapper);
+      c.set("replies", replies);
       return next();
     })
     .route("", router);
@@ -223,7 +225,7 @@ const makeReadyzApp = (reply?: string) => {
     HTTP_TIMEOUT: 5_000,
     QUEUE_PRODUCER_NAME: "monitoring-producer",
   });
-  return { channel, response: Promise.resolve(response), sent };
+  return { replies, response: Promise.resolve(response), sent };
 };
 
 describe("GET /idp/:name/readyz", () => {
@@ -287,7 +289,7 @@ describe("GET /idp/:name/readyz", () => {
 
   it("fails rpc after HTTP_TIMEOUT plus one second without reply", async () => {
     jest.useFakeTimers();
-    const { channel, response, sent } = makeReadyzApp();
+    const { replies, response, sent } = makeReadyzApp();
     const { options } = await sent;
     jest.advanceTimersByTime(6_000);
     jest.useRealTimers();
@@ -297,6 +299,6 @@ describe("GET /idp/:name/readyz", () => {
     expect(await res.text()).toBe(
       "[-]rpc failed: no reply after 6000ms\nreadyz check failed\n",
     );
-    expect(channel.listenerCount(options.correlationId)).toBe(0);
+    expect(replies.listenerCount(options.correlationId)).toBe(0);
   });
 });
