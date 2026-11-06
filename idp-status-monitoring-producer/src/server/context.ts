@@ -6,6 +6,7 @@ import type {
   ChannelWrapper,
 } from "amqp-connection-manager";
 import type { Env } from "hono";
+import type { EventEmitter } from "node:events";
 
 //
 
@@ -14,5 +15,6 @@ export interface ServerContext extends Env {
   Variables: {
     channelWrapper: ChannelWrapper;
     connection: AmqpConnectionManager | null;
+    replies: EventEmitter;
   };
 }
