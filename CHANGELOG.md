@@ -1,5 +1,18 @@
 # Changelog
 
+## [2026.11.2](https://github.com/proconnect-gouv/idp-status-monitoring/compare/2026.11.1...2026.11.2) (2026-11-23)
+
+### Dépendances
+
+- ⬆️ Bump @types/bun from 1.4.4 to 1.4.5 ([#209](https://github.com/proconnect-gouv/idp-status-monitoring/issues/209)) ([5c7c906](https://github.com/proconnect-gouv/idp-status-monitoring/commit/5c7c90687f1631df1fa1e2175d7a2308162552b3))
+- ⬆️ Bump hono from 4.13.18 to 4.13.21 ([#212](https://github.com/proconnect-gouv/idp-status-monitoring/issues/212)) ([e622d25](https://github.com/proconnect-gouv/idp-status-monitoring/commit/e622d25b84098a56b19adf72f227e1f570fb6f92))
+- ⬆️ Bump proconnect-gouv/release-action from v1.3.0 to v1.3.2 ([#207](https://github.com/proconnect-gouv/idp-status-monitoring/issues/207)) ([43628df](https://github.com/proconnect-gouv/idp-status-monitoring/commit/43628dfd3ca3c9eebbed0c510b497d15ec625fe2))
+- ⬆️ Bump prettier from 3.9.10 to 3.10.1 ([#211](https://github.com/proconnect-gouv/idp-status-monitoring/issues/211)) ([0ecb12b](https://github.com/proconnect-gouv/idp-status-monitoring/commit/0ecb12bf10e6d5c5a6b5633381192e338463eefb))
+- ⬆️ Bump oven/bun to v1.4.5 ([#210](https://github.com/proconnect-gouv/idp-status-monitoring/issues/210)) ([acff075](https://github.com/proconnect-gouv/idp-status-monitoring/commit/acff075b0134cb6720f475e31a962ade1597fbd2))
+- ⬆️ Bump hono from 4.13.17 to 4.13.18 ([#206](https://github.com/proconnect-gouv/idp-status-monitoring/issues/206)) ([3cea27f](https://github.com/proconnect-gouv/idp-status-monitoring/commit/3cea27fc19594a180eb756605671e57248d3c4fe))
+- ⬆️ Bump amqplib from 2.3.1 to 2.3.3 ([#205](https://github.com/proconnect-gouv/idp-status-monitoring/issues/205)) ([11a1e67](https://github.com/proconnect-gouv/idp-status-monitoring/commit/11a1e672bf64dca34e235088d0a12eb399ac87b2))
+- ⬆️ Bump @tsconfig/bun from 1.0.11 to 1.0.12 ([#204](https://github.com/proconnect-gouv/idp-status-monitoring/issues/204)) ([d3559a0](https://github.com/proconnect-gouv/idp-status-monitoring/commit/d3559a0a3b5caf3c9405f6ff4b4e82d51c26842e))
+
 ## [2026.11.1](https://github.com/proconnect-gouv/idp-status-monitoring/compare/2026.11.0...2026.11.1) (2026-11-16)
 
 ### Dépendances
